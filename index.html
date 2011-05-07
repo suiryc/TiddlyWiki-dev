@@ -41,8 +41,6 @@ DAMAGE.
 <!--PRE-HEAD-START-->
 <!--{{{-->
 <link rel='alternate' type='application/rss+xml' title='RSS' href='index.xml' />
-<script src='http://www.google-analytics.com/ga.js' type='text/javascript' async='true'>
-</script>
 <!--}}}-->
 
 <!--PRE-HEAD-END-->
@@ -515,51 +513,65 @@ Also see [[AdvancedOptions]]</pre>
 </div>
 <!--POST-SHADOWAREA-->
 <div id="storeArea">
-<div title="CustomTracker" creator="Julien Coloos" modifier="Julien Coloos" created="201105071452" modified="201105071452" tags="systemConfig" changecount="2">
+<div title="DefaultTiddlers" creator="Julien Coloos" modifier="Julien Coloos" created="201105062127" changecount="1">
+<pre>[[Plugins]]</pre>
+</div>
+<div title="GATracker" creator="Julien Coloos" modifier="Julien Coloos" created="201105071452" modified="201105071819" tags="systemConfig" changecount="3">
 <pre>//{{{
-/* Only track in readOnly mode */
-if(readOnly) {(function(){
-
+/* Google Analytics queue object. Needs to be global. */
 var _gaq = _gaq || [];
 
+/* Only track in readOnly mode */
+if (readOnly &amp;&amp; !config.extensions.GATracker) {(function($) {
+
+/* Insert script tag to load GA */
+$('head').eq(0).prepend($('&lt;script/&gt;').attr({type: 'text/javascript', async: 'true', src: ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js'}));
+
 /* Prepare overridden TiddlyWiki displaying */
-var CustomTracker = {
+var pl = config.extensions.GATracker = {
 	/* Tracking function */
 	track: function() {
 		_gaq.push.apply(_gaq, arguments);
 	},
 	/* New display function */
-	trackAndDisplayTiddler: function(srcElement, tiddler) {
-		var title = (tiddler instanceof Tiddler) ? tiddler.title : tiddler;
-		CustomTracker.track(['gwo._trackPageview', '/' + title]);
-		CustomTracker.displayTiddler.apply(this, arguments);
+	trackAndDisplayTiddler: function(srcElement, tiddler, template, animate, unused, customFields, toggle, animationSrc) {
+		if (toggle !== true) {
+			var title = (tiddler instanceof Tiddler) ? tiddler.title : tiddler;
+			var trackData = ['_trackEvent', 'Tiddlers'];
+			if (story.getTiddler(title)) {
+				/* Tiddler is already displayed */
+				if (template === DEFAULT_EDIT_TEMPLATE) {
+					/* Tiddler is being edited */
+					trackData.push('Edit');
+				}
+				else {
+					trackData.push('Refresh');
+				}
+			}
+			else {
+				/* Tiddler is not yet displayed */
+				trackData.push('Open');
+			}
+			trackData.push(title);
+			pl.track(trackData);
+		}
+		pl.displayTiddler.apply(this, arguments);
 	}
 };
 
 /* Override current TiddlyWiki display function */
-CustomTracker.displayTiddler = story.displayTiddler;
-story.displayTiddler = CustomTracker.trackAndDisplayTiddler;
+pl.displayTiddler = story.displayTiddler;
+story.displayTiddler = pl.trackAndDisplayTiddler;
 
 /* Initialize tracking */
-CustomTracker.track(['_setAccount', 'UA-23188652-1'], ['_trackPageview']);
+pl.track(['_setAccount', 'UA-23188652-1'], ['_trackPageview']);
 
-})();}
+})(jQuery);}
 //}}}</pre>
-</div>
-<div title="DefaultTiddlers" creator="Julien Coloos" modifier="Julien Coloos" created="201105062127" changecount="1">
-<pre>[[Plugins]]</pre>
 </div>
 <div title="MainMenu" creator="Julien Coloos" modifier="Julien Coloos" created="201105062153" changecount="1">
 <pre>[[Plugins]]
 [[GettingStarted]]</pre>
-</div>
-<div title="MarkupPreHead" creator="Julien Coloos" modifier="Julien Coloos" created="201105071439" changecount="1">
-<pre>&lt;!--{{{--&gt;
-&lt;link rel='alternate' type='application/rss+xml' title='RSS' href='index.xml' /&gt;
-&lt;script src='http://www.google-analytics.com/ga.js' type='text/javascript' async='true'&gt;
-&lt;/script&gt;
-&lt;!--}}}--&gt;
-</pre>
 </div>
 <div title="Plugins" creator="Julien Coloos" modifier="Julien Coloos" created="201105062129" modified="201105062225" changecount="5">
 <pre>Searching for a ~ToDo list feature in ~TiddlyWiki, I found a few tools like [[CheckboxPlugin|http://www.tiddlytools.com/#CheckboxPlugin]], [[ToDoListToDoList|http://www.tiddlytools.com/#ToDoList]] and [[TaskOrganizerPlugin|http://www.math.ist.utl.pt/~psoares/addons_2.4.html#TaskOrganizerPlugin]], or even alternate versions of the original ~TiddlyWiki. But none met my needs.
