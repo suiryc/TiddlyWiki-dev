@@ -773,13 +773,13 @@ handler: function(place, macroName, params, wikifier, paramString, tiddler) {
 <pre>txt_GATracker_id: UA-23188652-1
 txt_GATracker_track: 1%2C0%2C1%2C1%2C1%2C1</pre>
 </div>
-<div title="ToDoListPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105062221" modified="201105062226" tags="systemConfig" changecount="3">
+<div title="ToDoListPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105062221" modified="201105152051" tags="systemConfig" changecount="4">
 <pre>/***
 |Name|ToDoListPlugin|
 |Description|ToDo list contained in a tiddler|
 |Author|Julien Coloos|
-|Version|1.0.0|
-|Date|2011-05-06|
+|Version|1.1.0|
+|Date|2011-05-15|
 |Status|stable|
 |Source|http://julien.coloos.free.fr/TiddlyWiki-dev/#ToDoListPlugin|
 |License|[img[CC BY-SA 3.0|http://i.creativecommons.org/l/by-sa/3.0/80x15.png][http://creativecommons.org/licenses/by-sa/3.0/]]|
@@ -788,14 +788,14 @@ txt_GATracker_track: 1%2C0%2C1%2C1%2C1%2C1</pre>
 !Code
 ***/
 //{{{
-version.extensions.ToDoListPlugin={major:1,minor:0,revision:0,date:new Date(2011,5,6)};
 if(!config.macros.ToDoList){(function($){
+version.extensions.ToDoListPlugin={major:1,minor:1,revision:0,date:new Date(2011,5,15)};
 var pl=config.macros.ToDoList={
 handler:function(place,macroName,params,wikifier,paramString,tiddler){
 	var tiddlerDisp,todoCount=0,doneCount=0,namedParams=paramString.parseParams(null,null,true),title=tiddler.title,taskList=tiddler.fields[&quot;tdl_list&quot;],rootNode=createTiddlyElement(place,&quot;div&quot;),menuNode=$(&quot;&lt;div/&gt;&quot;)[0],table=0,v=0,tableNode=createTiddlyElement(rootNode,&quot;div&quot;),node=story.findContainingTiddler(place),paramTable=getParam(namedParams,&quot;table&quot;),tasks=taskList?taskList.split(&quot;,&quot;):[],paramCats=getParam(namedParams,&quot;categories&quot;),cats=paramCats&amp;&amp;(paramCats!=&quot;0&quot;)?{list:[],map:{}}:null,tooltip=$(&quot;&lt;div/&gt;&quot;).css({display:&quot;none&quot;,opacity:&quot;0.85&quot;,position:&quot;absolute&quot;,&quot;background-color&quot;:&quot;#EEEEEE&quot;,border:&quot;1px solid #888888&quot;,&quot;border-radius&quot;:&quot;10px&quot;,&quot;box-shadow&quot;:&quot;6px 6px 3px #CCCCCC&quot;,padding:&quot;4px&quot;}),rows;
 	if(node) tiddlerDisp=store.getTiddler(node.getAttribute(&quot;tiddler&quot;));
 	if(!tiddlerDisp) tiddlerDisp=tiddler;
-	$(menuNode).html(&quot;&lt;a id='tdl_menu_access'&gt;Edit ToDo list&lt;/a&gt;&lt;div id='tdl_action_menu' style='display:none'&gt;&lt;a id='tdl_action_add'&gt;Add&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_update'&gt;Update&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_rearrange'&gt;Rearrange&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_remove'&gt;Remove&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_purge'&gt;Purge&lt;/a&gt;&lt;br/&gt;&lt;/div&gt;&lt;div id='tdl_action_message' style='display:none'/&gt;&lt;div id='tdl_task_entry_form' style='display:none'&gt;&lt;table&gt;&lt;tr&gt;&lt;td&gt;Category:&lt;/td&gt;&lt;td&gt;&lt;select id='tdl_task_cat'&gt;&lt;option value='-1'&gt;Uncategorized&lt;/option&gt;&lt;option value='-2'&gt;New category&lt;/option&gt;&lt;option value=''&gt;----------&lt;/option&gt;&lt;/select&gt;&lt;br/&gt;&lt;input id='tdl_task_newcat' type='text' style='width:99%;display:none'/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Label:&lt;/td&gt;&lt;td style='width:100%'&gt;&lt;input id='tdl_task_lbl' type='text' style='width:99%'/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Description:&lt;/td&gt;&lt;td&gt;&lt;textarea id='tdl_task_desc' rows='15' style='width:99%'&gt;&lt;/textarea&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;div id='tdl_action_submit_form' style='display:none'&gt;&lt;input id='tdl_action_submit' type='submit'/&gt;&lt;input id='tdl_action_cancel' type='submit' value='Cancel'/&gt;&lt;/div&gt;&quot;).find(&quot;a&quot;).attr({href:&quot;javascript:;&quot;});
+	$(menuNode).html(&quot;&lt;a id='tdl_menu_access'&gt;Edit ToDo list&lt;/a&gt;&lt;div id='tdl_action_menu' style='display:none'&gt;&lt;a id='tdl_action_add'&gt;Add&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_update'&gt;Update&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_rearrange'&gt;Rearrange&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_remove'&gt;Remove&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_purge'&gt;Purge&lt;/a&gt;&lt;br/&gt;&lt;/div&gt;&lt;div id='tdl_action_message' style='display:none'/&gt;&lt;div id='tdl_task_entry_form' style='display:none'&gt;&lt;table&gt;&lt;tr&gt;&lt;td&gt;Category:&lt;/td&gt;&lt;td&gt;&lt;select id='tdl_task_cat'&gt;&lt;option value='-1'&gt;Uncategorized&lt;/option&gt;&lt;option value='-2'&gt;New category&lt;/option&gt;&lt;option value=''&gt;----------&lt;/option&gt;&lt;/select&gt;&lt;br/&gt;&lt;input id='tdl_task_newcat' type='text' style='width:99%;display:none'/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Label:&lt;/td&gt;&lt;td style='width:100%'&gt;&lt;input id='tdl_task_lbl' type='text' style='width:99%'/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Description:&lt;/td&gt;&lt;td&gt;&lt;textarea id='tdl_task_desc' rows='15' style='width:99%'&gt;&lt;/textarea&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;a id='tdl_preview'&gt;Preview&lt;/a&gt;&lt;/div&gt;&lt;div id='tdl_action_submit_form' style='display:none'&gt;&lt;input id='tdl_action_submit' type='submit'/&gt;&lt;input id='tdl_action_cancel' type='submit' value='Cancel'/&gt;&lt;/div&gt;&quot;).find(&quot;a&quot;).attr({href:&quot;javascript:;&quot;});
 	$(&quot;body&quot;).append(tooltip);
 	if(!cats) $(&quot;#tdl_task_entry_form table tr&quot;,menuNode).eq(0).hide();
 
@@ -900,30 +900,46 @@ handler:function(place,macroName,params,wikifier,paramString,tiddler){
 	$(&quot;#tdl_action_rearrange&quot;,menuNode).click({rootNode:rootNode,action:pl.Action.REARRANGE},pl.taskAction);
 	$(&quot;#tdl_action_remove&quot;,menuNode).click({rootNode:rootNode,action:pl.Action.REMOVE},pl.taskAction);
 	$(&quot;#tdl_action_purge&quot;,menuNode).click({rootNode:rootNode,action:pl.Action.PURGE},pl.taskAction);
+	$(&quot;#tdl_preview&quot;,menuNode).mouseover(function(){
+		var data=pl.taskFormData(menuNode,cats);
+		$(pl.taskSection(rootNode,rootNode.tdl.tasks,cats?data.cat||&quot;Uncategorized&quot;:null,data.lbl,data.desc)).show().appendTo(tooltip.html(&quot;&quot;));
+		var pos=$(this).offset();
+		$(&quot;.tdl_nopreview&quot;,tooltip).remove();
+		tooltip.css({left:pos.left+$(this).width()+5+&quot;px&quot;,top:pos.top-5+&quot;px&quot;}).show();
+	}).mouseout(function(){tooltip.hide().html(&quot;&quot;)});
 
-	$.each(tasks,function(i,id){
-		var cat=tiddler.fields[&quot;tdl_&quot;+id+&quot;_category&quot;]||&quot;Uncategorized&quot;,desc=tiddler.fields[&quot;tdl_&quot;+id+&quot;_description&quot;],created=pl.getDate(title,id,&quot;created&quot;),updated=pl.getDate(title,id,&quot;updated&quot;),completed=pl.getDate(title,id,&quot;completed&quot;),section=&quot;!!&quot;+tiddler.fields[&quot;tdl_&quot;+id+&quot;_label&quot;];
-		wikify(section,node=createTiddlyElement(rootNode,&quot;div&quot;,&quot;tdl_&quot;+id+&quot;_anchor&quot;,&quot;tdl_task&quot;));
-		if(!desc) $(node).hide();
-		$(createTiddlyButton(createTiddlyElement(node,&quot;div&quot;,null,&quot;tdl_nopreview&quot;),&quot;Go to list&quot;)).attr({href:&quot;javascript:;&quot;}).click({id:&quot;tdl_&quot;+id+&quot;_anchor_list&quot;},function(ev){
-			pl.scrollTo($(&quot;#&quot;+ev.data.id,rootNode)[0]);
-			return false;
-		});
-		section=&quot;&quot;;
-		if(cats) section+=&quot;''Category'': &quot;+cat+&quot;\n&quot;;
-		section+=&quot;''Created'': {{{&quot;+created.toLocaleString()+&quot;}}}\n&quot;;
-		if(updated) section += &quot;''Updated'': {{{&quot;+updated.toLocaleString()+&quot;}}}\n&quot;;
-		section += &quot;''Completed'': {{{&quot;+(completed?completed.toLocaleString():&quot;not yet&quot;)+&quot;}}}\n&quot;;
-		section += &quot;''Description'':&quot;+(desc?&quot;\n\n&quot;+desc:&quot; none&quot;);
-		wikify(section,node);
-		$(node).append(&quot;&lt;br class='tdl_nopreview'/&gt;&quot;);
-	});
+	$.each(tasks,function(i,id){$(pl.taskSection(rootNode,id,cats?tiddler.fields[&quot;tdl_&quot;+id+&quot;_category&quot;]||&quot;Uncategorized&quot;:null,tiddler.fields[&quot;tdl_&quot;+id+&quot;_label&quot;],tiddler.fields[&quot;tdl_&quot;+id+&quot;_description&quot;])).attr({id:&quot;tdl_&quot;+id+&quot;_anchor&quot;,class:&quot;tdl_task&quot;}).appendTo(rootNode)});
 	if(cats) $.each(cats.list,function(i,c){if(c!=&quot;Uncategorized&quot;) $(&quot;&lt;option/&gt;&quot;).html(pl.plain(c)).val(i).appendTo($(&quot;#tdl_task_cat&quot;,menuNode))});
 	$(&quot;#tdl_task_cat&quot;,menuNode).change(function(){
 		if($(&quot;#tdl_task_cat&quot;,menuNode).val()==&quot;&quot;) $(&quot;#tdl_task_cat option&quot;,menuNode).eq(0).attr({selected:&quot;selected&quot;});
 		if($(&quot;#tdl_task_cat&quot;,menuNode).val()==-2) $(&quot;#tdl_task_newcat&quot;,menuNode).show(&quot;fast&quot;);
 		else $(&quot;#tdl_task_newcat&quot;,menuNode).hide(&quot;fast&quot;);
 	});
+},
+taskSection:function(rootNode,id,cat,lbl,desc){
+	var title=rootNode.tdl.title,created=pl.getDate(title,id,&quot;created&quot;)||new Date(),updated=pl.getDate(title,id,&quot;updated&quot;),completed=pl.getDate(title,id,&quot;completed&quot;),section=&quot;!!&quot;+lbl,node;
+	wikify(section,node=createTiddlyElement(null,&quot;div&quot;));
+	if(!desc) $(node).hide();
+	$(createTiddlyButton(createTiddlyElement(node,&quot;div&quot;,null,&quot;tdl_nopreview&quot;),&quot;Go to list&quot;)).attr({href:&quot;javascript:;&quot;}).click({id:&quot;tdl_&quot;+id+&quot;_anchor_list&quot;},function(ev){
+		pl.scrollTo($(&quot;#&quot;+ev.data.id,rootNode)[0]);
+		return false;
+	});
+	section=&quot;&quot;;
+	if(cat) section+=&quot;''Category'': &quot;+cat+&quot;\n&quot;;
+	section+=&quot;''Created'': {{{&quot;+created.toLocaleString()+&quot;}}}\n&quot;;
+	if(updated) section += &quot;''Updated'': {{{&quot;+updated.toLocaleString()+&quot;}}}\n&quot;;
+	section += &quot;''Completed'': {{{&quot;+(completed?completed.toLocaleString():&quot;not yet&quot;)+&quot;}}}\n&quot;;
+	section += &quot;''Description'':&quot;+(desc?&quot;\n\n&quot;+desc:&quot; none&quot;);
+	wikify(section,node);
+	$(node).append(&quot;&lt;br class='tdl_nopreview'/&gt;&quot;);
+	return node;
+},
+taskFormData:function(menuNode,cats){
+	var cat;
+	if((cat=$(&quot;#tdl_task_cat&quot;,menuNode).val())==-1) cat=null;
+	else if(cat==-2) {if((cat=$(&quot;#tdl_task_newcat&quot;,menuNode).val())==&quot;&quot;) cat=undefined}
+	else cat=cats.list[parseInt($(&quot;#tdl_task_cat&quot;,menuNode).val())];
+	return {cat:cat,lbl:$(&quot;#tdl_task_lbl&quot;,menuNode).val(),desc:$(&quot;#tdl_task_desc&quot;,menuNode).val()};
 },
 hideActionMenu:function(menuNode){
 	$(&quot;#tdl_action_menu&quot;,menuNode).unbind(&quot;mouseleave&quot;).hide();
@@ -944,15 +960,13 @@ showTaskForm:function(rootNode,id){
 	$(&quot;#tdl_task_desc&quot;,menuNode).val(desc||&quot;&quot;);
 	$(&quot;#tdl_action_submit&quot;,menuNode).val((add?&quot;Add&quot;:&quot;Update&quot;)+&quot; task&quot;).unbind(&quot;click&quot;).click(function(){
 		if(add) id=parseInt(store.getValue(title,&quot;tdl_nextId&quot;)||&quot;1&quot;);
-		if(!(lbl=$(&quot;#tdl_task_lbl&quot;,menuNode).val())||!id) return false;
+		var data=pl.taskFormData(menuNode,cats);
+		if(!data.lbl||!id||(data.cat===undefined)) return false;
 
-		if((cat=$(&quot;#tdl_task_cat&quot;,menuNode).val())==-1) cat=undefined;
-		else if(cat==-2) {if((cat=$(&quot;#tdl_task_newcat&quot;,menuNode).val())==&quot;&quot;) return false}
-		else cat=cats.list[parseInt($(&quot;#tdl_task_cat&quot;,menuNode).val())];
 		pl.setDate(title,id,add?&quot;created&quot;:&quot;updated&quot;,new Date());
-		store.setValue(title,&quot;tdl_&quot;+id+&quot;_category&quot;,cat);
-		store.setValue(title,&quot;tdl_&quot;+id+&quot;_label&quot;,lbl);
-		store.setValue(title,&quot;tdl_&quot;+id+&quot;_description&quot;,$(&quot;#tdl_task_desc&quot;,menuNode).val());
+		store.setValue(title,&quot;tdl_&quot;+id+&quot;_category&quot;,data.cat);
+		store.setValue(title,&quot;tdl_&quot;+id+&quot;_label&quot;,data.lbl);
+		store.setValue(title,&quot;tdl_&quot;+id+&quot;_description&quot;,data.desc);
 		if(add){
 			store.setValue(title,&quot;tdl_nextId&quot;,id+1);
 			store.setValue(title,&quot;tdl_list&quot;,(taskList?taskList+&quot;,&quot;:&quot;&quot;)+id);
@@ -975,7 +989,8 @@ removeTask:function(rootNode,id){
 		var t=$(this).attr(&quot;tiddlylink&quot;);
 		if(asked.contains(t)||--links[t]) return;
 		asked.push(t);
-		if(!store.getReferringTiddlers(t).length&amp;&amp;!store.getTiddler(t).isTagged(&quot;excludeLists&quot;)&amp;&amp;confirm(&quot;Remove possibly orphan tiddler:\n&quot;+t)){
+		if(!store.getReferringTiddlers(t).length&amp;&amp;!store.getTiddler(t).isTagged(&quot;excludeLists&quot;)&amp;&amp;confirm(&quot;Remove possibly orphan tiddler ?\n&quot;+t)){
+			if(store.getTiddler(t).isTagged(&quot;systemConfig&quot;)&amp;&amp;!confirm(&quot;Tiddler has systemConfig tag, remove it anyway ?\n&quot;+t)) return;
 			store.removeTiddler(t);
 			story.closeTiddler(t,true);
 		}
@@ -1130,12 +1145,12 @@ pl.Action={NONE:0,ADD:1,UPDATE:2,REARRANGE:3,REMOVE:4,PURGE:5};
 })(jQuery);}
 //}}}</pre>
 </div>
-<div title="ToDoListPluginDocumentation" creator="Julien Coloos" modifier="Julien Coloos" created="201105062227" modified="201105062228" changecount="2" tdl_1_created="1304720981702" tdl_1_label="Task 1: without long description" tdl_1_description="" tdl_nextid="6" tdl_list="1,2,3,4,5" tdl_2_created="1304721002525" tdl_2_label="Task 2" tdl_2_description="With long ''description''." tdl_2_completed="1304721005323" tdl_3_created="1304721036949" tdl_3_category="[[Category 1]]" tdl_3_label="//Categorized// task" tdl_3_description="" tdl_4_created="1304721056287" tdl_4_category="[[Category 1]]" tdl_4_label="Another categorized task" tdl_4_description="" tdl_5_created="1304721078462" tdl_5_label="Yet another category" tdl_5_description="" tdl_5_updated="1304721099956" tdl_5_category="{{{Category 2}}}" tdl_4_completed="1304721106696">
+<div title="ToDoListPluginDocumentation" creator="Julien Coloos" modifier="Julien Coloos" created="201105062227" modified="201105152051" changecount="3" tdl_1_created="1304720981702" tdl_1_label="Task 1: without long description" tdl_1_description="" tdl_nextid="6" tdl_list="1,2,3,4,5" tdl_2_created="1304721002525" tdl_2_label="Task 2" tdl_2_description="With long ''description''." tdl_2_completed="1304721005323" tdl_3_created="1304721036949" tdl_3_category="[[Category 1]]" tdl_3_label="//Categorized// task" tdl_3_description="" tdl_4_created="1304721056287" tdl_4_category="[[Category 1]]" tdl_4_label="Another categorized task" tdl_4_description="" tdl_5_created="1304721078462" tdl_5_label="Yet another category" tdl_5_description="" tdl_5_updated="1304721099956" tdl_5_category="{{{Category 2}}}" tdl_4_completed="1304721106696">
 <pre>|Name|ToDoListPluginDocumentation|
 |Description|~ToDo list contained in a tiddler|
 |Author|Julien Coloos|
-|Version|1.0.0|
-|Date|2011-05-06|
+|Version|1.1.0|
+|Date|2011-05-15|
 |Status|stable|
 |Source|http://julien.coloos.free.fr/TiddlyWiki-dev/#ToDoListPlugin|
 |License|[img[CC BY-SA 3.0|http://i.creativecommons.org/l/by-sa/3.0/80x15.png][http://creativecommons.org/licenses/by-sa/3.0/]]|
@@ -1187,8 +1202,10 @@ Each label is preceded by:
 The action menu, which is displayed when the mouse is over the {{{Edit ToDo list}}} link, proposes the following actions:
 *//Add//: adds a new task
 **a form asking for the task label and description is shown
+**task details can be previewed in a (simple) transparent tooltip
 *//Update//: edit a task
 **a form allowing to edit the task label and description is shown
+**task details can be previewed in a (simple) transparent tooltip
 *//Rearrange//: change the order in which tasks are displayed
 **to move a task, user first selects the task to move, then the task to move to
 **only the order of tasks is changed, status and category are not altered: thus trying to move a task to another status or category will not result in the expected result
@@ -1265,7 +1282,14 @@ The following parameters are available:
 
 
 !Revision History
-|2011-05-06|1.0.0|Initial release|</pre>
+!!v1.1.0 (2011-05-15)
+Enhancements:
+*when user asks to also remove what appears to be an orphan tiddler associated to a task being removed, a second confirmation is requested if the tiddler has the {{{systemConfig}}} tag
+**it's a cheap security check against removal errors, since tiddlers with {{{systemConfig}}} tag may still be needed while not being referenced by any other tiddler
+*a preview (using the transparent tooltip) is now available in the task form (add/update action)
+
+!!v1.0.0 (2011-05-06)
+Initial release.</pre>
 </div>
 </div>
 <!--POST-STOREAREA-->
