@@ -585,13 +585,13 @@ Following how to do it with the [[legacy tracking method|http://blog.spacelag.co
 !Notes
 How to create a [[Cheap modal prompt]].</pre>
 </div>
-<div title="GATrackerPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105142206" modified="201105142206" tags="systemConfig" changecount="2">
+<div title="GATrackerPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105142206" modified="201105171116" tags="systemConfig" changecount="3">
 <pre>/***
 |Name|GATrackerPlugin|
 |Description|Google Analytics tracker|
 |Author|Julien Coloos|
-|Version|1.0.0|
-|Date|2011-05-14|
+|Version|1.1.0|
+|Date|2011-05-17|
 |Status|stable|
 |Source|http://julien.coloos.free.fr/TiddlyWiki-dev/#GATrackerPlugin|
 |License|[img[CC BY-SA 3.0|http://i.creativecommons.org/l/by-sa/3.0/80x15.png][http://creativecommons.org/licenses/by-sa/3.0/]]|
@@ -610,16 +610,19 @@ Tracking can be reported as either:
 ** pages are named {{{/#Tiddler name}}}
 * events
 ** Category: {{{Tiddlers}}}
-** Action: {{{Open}}}, {{{Refresh}}}, {{{Edit}}} or {{{Close}}}
-** Label: tiddler name
+** Action: {{{Open}}}, {{{Refresh}}}, {{{Edit}}}, {{{Close}}} or {{{CloseAll}}}
+** Label: tiddler name (excluded one if any for {{{CloseAll}}} action)
+** Value: for the {{{CloseAll}}} action, the number of closed tiddlers
+** Note: Google Analytics script limits the number of events (1 every 5 seconds, with a burst limit of 10)
 Tracking can be globally disabled, or enabled per action on each tiddler:
 * //Open//: when tiddler was not yet displayed
-** Note: default tiddlers automatically trigger this action when accessing TiddlyWiki
+** Note: default tiddlers do not trigger this action when accessing TiddlyWiki
 * //Refresh//: when tiddler was already displayed
 ** Note: this action is automatically triggered after editing a tiddler
 * //Edit//: when editing (or viewing in read-only mode) the tiddler
 * //Close//: when tiddler was displayed
 ** this action is never tracked in //pages views// tracking
+** the //CloseAll// action is triggered by the TiddyWiki links //close all// and //close others// if at least one tiddler was closed; individual tiddlers closed are not tracked as //Close// actions
 
 
 !Configuration
@@ -627,6 +630,11 @@ Tracking can be globally disabled, or enabled per action on each tiddler:
 
 
 !Revision History
+!!v1.1.0 (2011-05-17)
+Enhancements:
+*do not trigger {{{Open}}} action when displaying default tiddlers
+*added the {{{CloseAll}}} action
+
 !!v1.0.0 (2011-05-14)
 Initial release.
 
@@ -639,10 +647,11 @@ var _gaq = _gaq || [];
 
 if (!config.extensions.GATracker) {(function($) {
 
-version.extensions.GATrackerPlugin = {major: 1, minor: 0, revision: 0, date: new Date(2011, 5, 14)};
+version.extensions.GATrackerPlugin = {major: 1, minor: 1, revision: 0, date: new Date(2011, 5, 17)};
 
 /* Prepare overridden TiddlyWiki displaying */
 var trackOptions = {};
+var displayDefault = 0, closingAll = 0;
 var pl = config.extensions.GATracker = {
 getOption: function(optKey) {
 	return (config.optionsSource &amp;&amp; (config.optionsSource[optKey] == &quot;setting&quot;)) ? config.options[optKey] : null;
@@ -681,26 +690,40 @@ saveOptions: function() {
 track: function() {
 	_gaq.push.apply(_gaq, arguments);
 },
+trackAndDisplayDefaultTiddlers: function() {
+	displayDefault = 1;
+	try { pl.displayDefaultTiddlers.apply(this, arguments) } catch(e){};
+	displayDefault = 0;
+},
 trackAndDisplayTiddler: function(srcElement, tiddler, template, animate, unused, customFields, toggle, animationSrc) {
-	var trackEvent, title = (tiddler instanceof Tiddler) ? tiddler.title : tiddler;
-	if (story.getTiddler(title)) {
-		/* Tiddler is already displayed */
-		if (toggle === true) {
-			/* Closing tiddler: tracked in separate function */
+	if (!displayDefault) {
+		var trackEvent, title = (tiddler instanceof Tiddler) ? tiddler.title : tiddler;
+		if (story.getTiddler(title)) {
+			/* Tiddler is already displayed */
+			if (toggle === true) {
+				/* Closing tiddler: tracked in separate function */
+			}
+			else if (template === DEFAULT_EDIT_TEMPLATE) {
+				if (trackOptions.events.edit) trackEvent = &quot;Edit&quot;;
+			}
+			else if (trackOptions.events.refresh) trackEvent = &quot;Refresh&quot;;
 		}
-		else if (template === DEFAULT_EDIT_TEMPLATE) {
-			if (trackOptions.events.edit) trackEvent = &quot;Edit&quot;;
-		}
-		else if (trackOptions.events.refresh) trackEvent = &quot;Refresh&quot;;
-	}
-	else if (trackOptions.events.open) trackEvent = &quot;Open&quot;;
+		else if (trackOptions.events.open) trackEvent = &quot;Open&quot;;
 
-	if (trackEvent) pl.track(trackOptions.type ? [&quot;_trackPageview&quot;, &quot;/#&quot; + title] : [&quot;_trackEvent&quot;, &quot;Tiddlers&quot;, trackEvent, title]);
+		if (trackEvent) pl.track(trackOptions.type ? [&quot;_trackPageview&quot;, &quot;/#&quot; + title] : [&quot;_trackEvent&quot;, &quot;Tiddlers&quot;, trackEvent, title]);
+	}
 	pl.displayTiddler.apply(this, arguments);
 },
 trackAndCloseTiddler: function(title, animate, unused) {
-	pl.track([&quot;_trackEvent&quot;, &quot;Tiddlers&quot;, &quot;Close&quot;, title]);
+	if (closingAll) closingAll++;
+	else pl.track([&quot;_trackEvent&quot;, &quot;Tiddlers&quot;, &quot;Close&quot;, title]);
 	pl.closeTiddler.apply(this, arguments);
+},
+trackAndCloseAllTiddlers: function(excluded) {
+	closingAll = 1;
+	try { pl.closeAllTiddlers.apply(this, arguments) } catch(e){};
+	if (closingAll &gt; 1) pl.track([&quot;_trackEvent&quot;, &quot;Tiddlers&quot;, &quot;CloseAll&quot;, excluded, closingAll - 1]);
+	closingAll = 0;
 }
 };
 
@@ -715,9 +738,13 @@ if (!local &amp;&amp; trackOptions.id &amp;&amp; trackOptions.enabled) {
 	/* Override TiddlyWiki display */
 	pl.displayTiddler = story.displayTiddler;
 	story.displayTiddler = pl.trackAndDisplayTiddler;
+	pl.displayDefaultTiddlers = story.displayDefaultTiddlers;
+	story.displayDefaultTiddlers = pl.trackAndDisplayDefaultTiddlers;
 	if (!trackOptions.type &amp;&amp; trackOptions.events.close) {
 		pl.closeTiddler = story.closeTiddler;
 		story.closeTiddler = pl.trackAndCloseTiddler;
+		pl.closeAllTiddlers = story.closeAllTiddlers;
+		story.closeAllTiddlers = pl.trackAndCloseAllTiddlers;
 	}
 
 	/* Initialize tracking */
