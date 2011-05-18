@@ -585,13 +585,13 @@ Following how to do it with the [[legacy tracking method|http://blog.spacelag.co
 !Notes
 How to create a [[Cheap modal prompt]].</pre>
 </div>
-<div title="GATrackerPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105142206" modified="201105171116" tags="systemConfig" changecount="3">
+<div title="GATrackerPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105142206" modified="201105182137" tags="systemConfig" changecount="4">
 <pre>/***
 |Name|GATrackerPlugin|
 |Description|Google Analytics tracker|
 |Author|Julien Coloos|
-|Version|1.1.0|
-|Date|2011-05-17|
+|Version|1.2.0|
+|Date|2011-05-18|
 |Status|stable|
 |Source|http://julien.coloos.free.fr/TiddlyWiki-dev/#GATrackerPlugin|
 |License|[img[CC BY-SA 3.0|http://i.creativecommons.org/l/by-sa/3.0/80x15.png][http://creativecommons.org/licenses/by-sa/3.0/]]|
@@ -610,8 +610,11 @@ Tracking can be reported as either:
 ** pages are named {{{/#Tiddler name}}}
 * events
 ** Category: {{{Tiddlers}}}
-** Action: {{{Open}}}, {{{Refresh}}}, {{{Edit}}}, {{{Close}}} or {{{CloseAll}}}
-** Label: tiddler name (excluded one if any for {{{CloseAll}}} action)
+** Action: {{{Open}}}, {{{Refresh}}}, {{{Edit}}}, {{{Search}}}, {{{Close}}} or {{{CloseAll}}}
+** Label
+*** for {{{CloseAll}}} action: excluded tiddler
+*** for {{{Search}}} action: searched text
+*** otherwise, tiddler name on which action is performed
 ** Value: for the {{{CloseAll}}} action, the number of closed tiddlers
 ** Note: Google Analytics script limits the number of events (1 every 5 seconds, with a burst limit of 10)
 Tracking can be globally disabled, or enabled per action on each tiddler:
@@ -623,6 +626,9 @@ Tracking can be globally disabled, or enabled per action on each tiddler:
 * //Close//: when tiddler was displayed
 ** this action is never tracked in //pages views// tracking
 ** the //CloseAll// action is triggered by the TiddyWiki links //close all// and //close others// if at least one tiddler was closed; individual tiddlers closed are not tracked as //Close// actions
+* //Search//: when searching in tiddlers
+** this action is never tracked in //pages views// tracking
+** {{{CloseAll}}} and {{{Open}}} actions are not taken into account while search is performed: TiddlyWiki automically closes opened tiddlers before searching and opens tiddler that match the searched text
 
 
 !Configuration
@@ -630,10 +636,15 @@ Tracking can be globally disabled, or enabled per action on each tiddler:
 
 
 !Revision History
+!!v1.2.0 (2011-05-18)
+Enhancements:
+* do not trigger {{{CloseAll}}} and {{{Open}}} actions when search is performed
+* added the {{{Search}}} action
+
 !!v1.1.0 (2011-05-17)
 Enhancements:
-*do not trigger {{{Open}}} action when displaying default tiddlers
-*added the {{{CloseAll}}} action
+* do not trigger {{{Open}}} action when displaying default tiddlers
+* added the {{{CloseAll}}} action
 
 !!v1.0.0 (2011-05-14)
 Initial release.
@@ -647,11 +658,11 @@ var _gaq = _gaq || [];
 
 if (!config.extensions.GATracker) {(function($) {
 
-version.extensions.GATrackerPlugin = {major: 1, minor: 1, revision: 0, date: new Date(2011, 5, 17)};
+version.extensions.GATrackerPlugin = {major: 1, minor: 2, revision: 0, date: new Date(2011, 5, 18)};
 
 /* Prepare overridden TiddlyWiki displaying */
 var trackOptions = {};
-var displayDefault = 0, closingAll = 0;
+var displayDefault = 0, closingAll = 0, searching = 0;
 var pl = config.extensions.GATracker = {
 getOption: function(optKey) {
 	return (config.optionsSource &amp;&amp; (config.optionsSource[optKey] == &quot;setting&quot;)) ? config.options[optKey] : null;
@@ -662,16 +673,17 @@ setOption: function(optKey, value) {
 	saveOption(optKey);
 },
 loadOptions: function() {
-	var gaTrack = (pl.getOption(&quot;txt_GATracker_track&quot;) || &quot;1,0,1,1,1,0&quot;).split(&quot;,&quot;);
+	var gaTrack = (pl.getOption(&quot;txt_GATracker_track&quot;) || &quot;1,0,1,1,1,0,0&quot;).split(&quot;,&quot;);
 	trackOptions = {
 		id: pl.getOption(&quot;txt_GATracker_id&quot;),
-		enabled: parseInt(gaTrack[0]),
-		type: parseInt(gaTrack[1]),
+		enabled: parseInt(gaTrack[0] || &quot;1&quot;),
+		type: parseInt(gaTrack[1] || &quot;0&quot;),
 		events: {
-			open: parseInt(gaTrack[2]),
-			refresh: parseInt(gaTrack[3]),
-			edit: parseInt(gaTrack[4]),
-			close: parseInt(gaTrack[5])
+			open: parseInt(gaTrack[2] || &quot;1&quot;),
+			refresh: parseInt(gaTrack[3]) || &quot;1&quot;,
+			edit: parseInt(gaTrack[4] || &quot;1&quot;),
+			close: parseInt(gaTrack[5] || &quot;0&quot;),
+			search: parseInt(gaTrack[6] || &quot;0&quot;)
 		}
 	};
 	if (trackOptions.id &amp;&amp; !trackOptions.id.length) {
@@ -708,7 +720,7 @@ trackAndDisplayTiddler: function(srcElement, tiddler, template, animate, unused,
 			}
 			else if (trackOptions.events.refresh) trackEvent = &quot;Refresh&quot;;
 		}
-		else if (trackOptions.events.open) trackEvent = &quot;Open&quot;;
+		else if (trackOptions.events.open &amp;&amp; !searching) trackEvent = &quot;Open&quot;;
 
 		if (trackEvent) pl.track(trackOptions.type ? [&quot;_trackPageview&quot;, &quot;/#&quot; + title] : [&quot;_trackEvent&quot;, &quot;Tiddlers&quot;, trackEvent, title]);
 	}
@@ -722,8 +734,14 @@ trackAndCloseTiddler: function(title, animate, unused) {
 trackAndCloseAllTiddlers: function(excluded) {
 	closingAll = 1;
 	try { pl.closeAllTiddlers.apply(this, arguments) } catch(e){};
-	if (closingAll &gt; 1) pl.track([&quot;_trackEvent&quot;, &quot;Tiddlers&quot;, &quot;CloseAll&quot;, excluded, closingAll - 1]);
+	if ((closingAll &gt; 1) &amp;&amp; !searching) pl.track([&quot;_trackEvent&quot;, &quot;Tiddlers&quot;, &quot;CloseAll&quot;, excluded, closingAll - 1]);
 	closingAll = 0;
+},
+trackAndSearch: function(text, useCaseSensitive, useRegExp) {
+	if (!trackOptions.type &amp;&amp; trackOptions.events.search) pl.track([&quot;_trackEvent&quot;, &quot;Tiddlers&quot;, &quot;Search&quot;, text]);
+	searching = 1;
+	try { pl.search.apply(this, arguments) } catch(e){};
+	searching = 0;
 }
 };
 
@@ -746,6 +764,8 @@ if (!local &amp;&amp; trackOptions.id &amp;&amp; trackOptions.enabled) {
 		pl.closeAllTiddlers = story.closeAllTiddlers;
 		story.closeAllTiddlers = pl.trackAndCloseAllTiddlers;
 	}
+	pl.search = story.search;
+	story.search = pl.trackAndSearch;
 
 	/* Initialize tracking */
 	pl.track([&quot;_setAccount&quot;, trackOptions.id], [&quot;_trackPageview&quot;]);
@@ -758,7 +778,7 @@ handler: function(place, macroName, params, wikifier, paramString, tiddler) {
 		$(createTiddlyElement(place, &quot;div&quot;)).html(&quot;Configuration is not available in read-only mode&quot;);
 		return;
 	}
-	var formNode = $(createTiddlyElement(place, &quot;div&quot;)).html(&quot;&lt;div&gt;Google Analytics plugin configuration:&lt;/div&gt;&lt;table&gt;&lt;tr&gt;&lt;td&gt;Account ID:&lt;/td&gt;&lt;td&gt;&lt;input id='ga_id' type='text'/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Tracking:&lt;/td&gt;&lt;td&gt;&lt;input id='ga_enabled' type='checkbox'/&gt;Enabled&lt;br/&gt;&lt;br/&gt;How: &lt;select id='ga_track'&gt;&lt;option value='0'&gt;Events&lt;/option&gt;&lt;option value='1'&gt;Pages&lt;/option&gt;&lt;/select&gt;&lt;br/&gt;&lt;br/&gt;What:&lt;br/&gt;&lt;input id='ga_track_open' type='checkbox'/&gt;Open&lt;br/&gt;&lt;input id='ga_track_refresh' type='checkbox'/&gt;Refresh&lt;br/&gt;&lt;input id='ga_track_edit' type='checkbox'/&gt;Edit&lt;br/&gt;&lt;input id='ga_track_close' type='checkbox'/&gt;Close&lt;br/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;input id='ga_action_submit' type='submit' value='Apply'/&gt;&quot;);
+	var formNode = $(createTiddlyElement(place, &quot;div&quot;)).html(&quot;&lt;div&gt;Google Analytics plugin configuration:&lt;/div&gt;&lt;table&gt;&lt;tr&gt;&lt;td&gt;Account ID:&lt;/td&gt;&lt;td&gt;&lt;input id='ga_id' type='text'/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Tracking:&lt;/td&gt;&lt;td&gt;&lt;input id='ga_enabled' type='checkbox'/&gt;Enabled&lt;br/&gt;&lt;br/&gt;How: &lt;select id='ga_track'&gt;&lt;option value='0'&gt;Events&lt;/option&gt;&lt;option value='1'&gt;Pages&lt;/option&gt;&lt;/select&gt;&lt;br/&gt;&lt;br/&gt;What:&lt;br/&gt;&lt;input id='ga_track_open' type='checkbox'/&gt;Open&lt;br/&gt;&lt;input id='ga_track_refresh' type='checkbox'/&gt;Refresh&lt;br/&gt;&lt;input id='ga_track_edit' type='checkbox'/&gt;Edit&lt;br/&gt;&lt;input id='ga_track_close' type='checkbox'/&gt;Close&lt;br/&gt;&lt;input id='ga_track_search' type='checkbox'/&gt;Search&lt;br/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;input id='ga_action_submit' type='submit' value='Apply'/&gt;&quot;);
 	$(&quot;#ga_id&quot;, formNode).val(trackOptions.id);
 	$(&quot;#ga_enabled&quot;, formNode)[0].checked = trackOptions.enabled;
 	$(&quot;#ga_track option&quot;, formNode).eq(trackOptions.type)[0].selected = true;
@@ -796,9 +816,9 @@ handler: function(place, macroName, params, wikifier, paramString, tiddler) {
 <div title="SiteTitle" creator="Julien Coloos" modifier="Julien Coloos" created="201105062123" changecount="1">
 <pre>Cyrius' ~TiddlyWiki dev</pre>
 </div>
-<div title="SystemSettings" modifier="System" created="201105142207" tags="excludeLists" changecount="2">
+<div title="SystemSettings" modifier="System" created="201105142207" tags="excludeLists" changecount="3">
 <pre>txt_GATracker_id: UA-23188652-1
-txt_GATracker_track: 1%2C0%2C1%2C1%2C1%2C1</pre>
+txt_GATracker_track: 1%2C0%2C1%2C1%2C1%2C1%2C1</pre>
 </div>
 <div title="ToDoListPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105062221" modified="201105152051" tags="systemConfig" changecount="4">
 <pre>/***
