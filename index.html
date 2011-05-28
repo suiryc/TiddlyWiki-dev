@@ -857,7 +857,7 @@ handler: function(place, macroName, params, wikifier, paramString, tiddler) {
 <pre>txt_GATracker_id: UA-23188652-1
 txt_GATracker_track: 1%2C0%2C1%2C1%2C1%2C1%2C1</pre>
 </div>
-<div title="TiddlerToCPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105282151" modified="201105282219" tags="systemConfig" changecount="2">
+<div title="TiddlerToCPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105282151" modified="201105282247" tags="systemConfig" changecount="3">
 <pre>/***
 |Name|TiddlerToCPlugin|
 |Description|Tiddler Table of Contents generator|
@@ -977,7 +977,7 @@ function cloneNodeWithEvents(node) {
 
 var pl = config.macros.TiddlerToC = {
 handler: function(place, macroName, params, wikifier, paramString, tiddler) {
-	if ($(place).parents(&quot;.viewer&quot;).size()) pl.generate(place);
+	if ($(place).hasClass(&quot;viewer&quot;) || $(place).parents(&quot;.viewer&quot;).size()) pl.generate(place);
 	else {
 		/* the macro is not used inside a tiddler content but probably in a template */
 		var t = story.findContainingTiddler(place);
