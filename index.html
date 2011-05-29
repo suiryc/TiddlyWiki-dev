@@ -1088,13 +1088,13 @@ generate: function(place) {
 ***/
 </pre>
 </div>
-<div title="ToDoListPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105062221" modified="201105291734" tags="systemConfig" changecount="7">
+<div title="ToDoListPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105062221" modified="201105291840" tags="systemConfig" changecount="8">
 <pre>/***
 |Name|ToDoListPlugin|
 |Description|ToDo list contained in a tiddler|
 |Author|Julien Coloos|
 |Version|1.3.0|
-|Date|2011-XX-XX|
+|Date|2011-05-29|
 |Status|stable|
 |Source|http://julien.coloos.free.fr/TiddlyWiki-dev/#ToDoListPlugin|
 |License|[img[CC BY-SA 3.0|http://i.creativecommons.org/l/by-sa/3.0/80x15.png][http://creativecommons.org/licenses/by-sa/3.0/]]|
@@ -1104,7 +1104,7 @@ generate: function(place) {
 ***/
 //{{{
 if(!config.macros.ToDoList){(function($){
-version.extensions.ToDoListPlugin={major:1,minor:3,revision:0,date:new Date(2011,5,21)};
+version.extensions.ToDoListPlugin={major:1,minor:3,revision:0,date:new Date(2011,5,29)};
 var tooltip=$(&quot;&lt;div/&gt;&quot;).css({display:&quot;none&quot;,opacity:&quot;0.85&quot;,position:&quot;absolute&quot;,&quot;background-color&quot;:&quot;#EEEEEE&quot;,border:&quot;1px solid #888888&quot;,&quot;border-radius&quot;:&quot;10px&quot;,&quot;box-shadow&quot;:&quot;6px 6px 3px #CCCCCC&quot;,padding:&quot;4px&quot;})
 ,pl=config.macros.ToDoList={
 handler:function(place,macroName,params,wikifier,paramString,tiddler){
@@ -1137,6 +1137,7 @@ handler:function(place,macroName,params,wikifier,paramString,tiddler){
 		node.tdl={id:id};
 		$(createTiddlyCheckbox(node,tiddler.fields[&quot;tdl_&quot;+id+&quot;_label&quot;],completed?&quot;checked&quot;:&quot;&quot;)).click({id:id,completed:completed},function(ev){
 			pl.setDate(title,ev.data.id,&quot;completed&quot;,ev.data.completed?undefined:new Date());
+			store.setValue(title,&quot;tdl_&quot;+ev.data.id+&quot;_completor&quot;,ev.data.completed?undefined:config.options.txtUserName);
 			pl.updTiddler(rootNode,title);
 			pl.refresh(title,tiddlerDisp.title);
 		});
@@ -1238,7 +1239,7 @@ showTooltip:function(node,rel){
 	tooltip.css(pos).show();
 },
 taskSection:function(rootNode,hLvl,id,cat,lbl,desc){
-	var title=rootNode.tdl.title,created=pl.getDate(title,id,&quot;created&quot;)||new Date(),updated=pl.getDate(title,id,&quot;updated&quot;),completed=pl.getDate(title,id,&quot;completed&quot;),section=&quot;!&quot;,node;
+	var title=rootNode.tdl.title,created=pl.getDate(title,id,&quot;created&quot;)||new Date(),creator=store.getValue(title,&quot;tdl_&quot;+id+&quot;_creator&quot;),updated=pl.getDate(title,id,&quot;updated&quot;),updator=store.getValue(title,&quot;tdl_&quot;+id+&quot;_updator&quot;),completed=pl.getDate(title,id,&quot;completed&quot;),completor=store.getValue(title,&quot;tdl_&quot;+id+&quot;_completor&quot;),section=&quot;!&quot;,node;
 	while(--hLvl&gt;0) section+=&quot;!&quot;;
 	wikify(section+lbl,node=createTiddlyElement(null,&quot;div&quot;));
 	if(!desc) $(node).hide();
@@ -1248,9 +1249,9 @@ taskSection:function(rootNode,hLvl,id,cat,lbl,desc){
 	});
 	section=&quot;&quot;;
 	if(cat) section+=&quot;''Category'': &quot;+cat+&quot;\n&quot;;
-	section+=&quot;''Created'': {{{&quot;+created.toLocaleString()+&quot;}}}\n&quot;;
-	if(updated) section += &quot;''Updated'': {{{&quot;+updated.toLocaleString()+&quot;}}}\n&quot;;
-	section += &quot;''Completed'': {{{&quot;+(completed?completed.toLocaleString():&quot;not yet&quot;)+&quot;}}}\n&quot;;
+	section+=&quot;''Created'': {{{&quot;+created.toLocaleString()+&quot;}}}&quot;+(creator?&quot; by [[&quot;+creator+&quot;]]&quot;:&quot;&quot;)+&quot;\n&quot;;
+	if(updated) section += &quot;''Updated'': {{{&quot;+updated.toLocaleString()+&quot;}}}&quot;+(updator?&quot; by [[&quot;+updator+&quot;]]&quot;:&quot;&quot;)+&quot;\n&quot;;
+	section += &quot;''Completed'': {{{&quot;+(completed?completed.toLocaleString():&quot;not yet&quot;)+&quot;}}}&quot;+(completed&amp;&amp;completor?&quot; by [[&quot;+completor+&quot;]]&quot;:&quot;&quot;)+&quot;\n&quot;;
 	section += &quot;''Description'':&quot;+(desc?&quot;\n\n&quot;+desc:&quot; none&quot;);
 	wikify(section,node);
 	$(node).append(&quot;&lt;br class='tdl_nopreview'/&gt;&quot;);
@@ -1286,6 +1287,7 @@ showTaskForm:function(rootNode,id){
 		if(!data.lbl||!id||(data.cat===undefined)) return false;
 
 		pl.setDate(title,id,add?&quot;created&quot;:&quot;updated&quot;,new Date());
+		store.setValue(title,&quot;tdl_&quot;+id+&quot;_&quot;+(add?&quot;creator&quot;:&quot;updator&quot;),config.options.txtUserName);
 		store.setValue(title,&quot;tdl_&quot;+id+&quot;_category&quot;,data.cat);
 		store.setValue(title,&quot;tdl_&quot;+id+&quot;_label&quot;,data.lbl);
 		store.setValue(title,&quot;tdl_&quot;+id+&quot;_description&quot;,data.desc);
@@ -1328,8 +1330,11 @@ removeTask:function(rootNode,id,orphans){
 		ntasks=(ntasks?ntasks+&quot;,&quot;:&quot;&quot;)+v;
 	});
 	pl.setDate(title,id,&quot;created&quot;,undefined);
+	store.setValue(title,&quot;tdl_&quot;+id+&quot;_creator&quot;,undefined);
 	pl.setDate(title,id,&quot;updated&quot;,undefined);
+	store.setValue(title,&quot;tdl_&quot;+id+&quot;_updator&quot;,undefined);
 	pl.setDate(title,id,&quot;completed&quot;,undefined);
+	store.setValue(title,&quot;tdl_&quot;+id+&quot;_completor&quot;,undefined);
 	store.setValue(title,&quot;tdl_&quot;+id+&quot;_category&quot;,undefined);
 	store.setValue(title,&quot;tdl_&quot;+id+&quot;_label&quot;,undefined);
 	store.setValue(title,&quot;tdl_&quot;+id+&quot;_description&quot;,undefined);
@@ -1377,8 +1382,11 @@ taskAction:function(ev){
 			$.each(tasks.sort(),function(i,id){
 				nid=parseInt(store.getValue(ntitle,&quot;tdl_nextId&quot;)||&quot;1&quot;);
 				pl.setDate(ntitle,nid,&quot;created&quot;,pl.getDate(title,id,&quot;created&quot;));
+				store.setValue(ntitle,&quot;tdl_&quot;+nid+&quot;_creator&quot;,store.getValue(title,&quot;tdl_&quot;+id+&quot;_creator&quot;));
 				pl.setDate(ntitle,nid,&quot;updated&quot;,pl.getDate(title,id,&quot;updated&quot;));
+				store.setValue(ntitle,&quot;tdl_&quot;+nid+&quot;_updator&quot;,store.getValue(title,&quot;tdl_&quot;+id+&quot;_updator&quot;));
 				pl.setDate(ntitle,nid,&quot;completed&quot;,pl.getDate(title,id,&quot;completed&quot;));
+				store.setValue(ntitle,&quot;tdl_&quot;+nid+&quot;_completor&quot;,store.getValue(title,&quot;tdl_&quot;+id+&quot;_completor&quot;));
 				store.setValue(ntitle,&quot;tdl_&quot;+nid+&quot;_category&quot;,store.getValue(title,&quot;tdl_&quot;+id+&quot;_category&quot;));
 				store.setValue(ntitle,&quot;tdl_&quot;+nid+&quot;_label&quot;,store.getValue(title,&quot;tdl_&quot;+id+&quot;_label&quot;));
 				store.setValue(ntitle,&quot;tdl_&quot;+nid+&quot;_description&quot;,store.getValue(title,&quot;tdl_&quot;+id+&quot;_description&quot;));
@@ -1507,12 +1515,12 @@ pl.Action={NONE:0,ADD:1,UPDATE:2,REARRANGE:3,REMOVE:4,PURGE:5,MIGRATE:6};
 })(jQuery);}
 //}}}</pre>
 </div>
-<div title="ToDoListPluginDocumentation" creator="Julien Coloos" modifier="Julien Coloos" created="201105062227" modified="201105291737" changecount="8" tdl_1_created="1304720981702" tdl_1_label="Task 1: without long description" tdl_1_description="" tdl_nextid="6" tdl_list="1,2,3,4,5" tdl_2_created="1304721002525" tdl_2_label="Task 2" tdl_2_description="With long ''description''." tdl_2_completed="1304721005323" tdl_3_created="1304721036949" tdl_3_category="[[Category 1]]" tdl_3_label="//Categorized// task" tdl_3_description="" tdl_4_created="1304721056287" tdl_4_category="[[Category 1]]" tdl_4_label="Another categorized task" tdl_4_description="" tdl_5_created="1304721078462" tdl_5_label="Yet another category" tdl_5_description="" tdl_5_updated="1304721099956" tdl_5_category="{{{Category 2}}}" tdl_4_completed="1304721106696">
+<div title="ToDoListPluginDocumentation" creator="Julien Coloos" modifier="Julien Coloos" created="201105062227" modified="201105291843" changecount="9" tdl_1_created="1304720981702" tdl_1_label="Task 1: without long description" tdl_1_description="" tdl_nextid="6" tdl_list="1,2,3,4,5" tdl_2_created="1304721002525" tdl_2_label="Task 2" tdl_2_description="With long ''description''." tdl_3_created="1304721036949" tdl_3_category="[[Category 1]]" tdl_3_label="//Categorized// task" tdl_3_description="" tdl_4_created="1304721056287" tdl_4_category="[[Category 1]]" tdl_4_label="Another categorized task" tdl_4_description="" tdl_5_created="1304721078462" tdl_5_label="Yet another category" tdl_5_description="" tdl_5_updated="1306694611429" tdl_5_category="{{{Category 2}}}" tdl_3_updated="1306694601863" tdl_3_updator="Julien Coloos" tdl_4_updated="1306694606184" tdl_4_updator="Julien Coloos" tdl_5_updator="Julien Coloos" tdl_1_updated="1306694616097" tdl_1_updator="Julien Coloos" tdl_2_updated="1306694620280" tdl_2_updator="Julien Coloos" tdl_4_completed="1306694623296" tdl_4_completor="Julien Coloos" tdl_2_completed="1306694625233" tdl_2_completor="Julien Coloos">
 <pre>|Name|ToDoListPluginDocumentation|
 |Description|~ToDo list contained in a tiddler|
 |Author|Julien Coloos|
 |Version|1.3.0|
-|Date|2011-XX-XX|
+|Date|2011-05-29|
 |Status|stable|
 |Source|http://julien.coloos.free.fr/TiddlyWiki-dev/#ToDoListPlugin|
 |License|[img[CC BY-SA 3.0|http://i.creativecommons.org/l/by-sa/3.0/80x15.png][http://creativecommons.org/licenses/by-sa/3.0/]]|
@@ -1532,11 +1540,11 @@ The list is composed of tasks, which associated data are:
 **optional (//Uncategorized// by default)
 **~TiddlyWiki style
 **available only if enabled
-*creation date
+*creation date and actor
 **automatically set upon task adding
-*last update date
+*last update date and actor
 **automatically set upon task editing
-*completion date
+*completion date and actor
 **automatically set upon task status switching
 Upon displaying, dates are formatted using the locale settings.
 
@@ -1601,8 +1609,11 @@ The ~ToDo list data are stored in the tiddler fields:
 **{{{tdl_}}}//{{{id}}}//{{{_label}}}: label
 **{{{tdl_}}}//{{{id}}}//{{{_description}}}: long description
 **{{{tdl_}}}//{{{id}}}//{{{_created}}}: creation date
+**{{{tdl_}}}//{{{id}}}//{{{_creator}}}: creation actor
 **{{{tdl_}}}//{{{id}}}//{{{_updated}}}: last update date
+**{{{tdl_}}}//{{{id}}}//{{{_updator}}}: last update actor
 **{{{tdl_}}}//{{{id}}}//{{{_completed}}}: completion date
+**{{{tdl_}}}//{{{id}}}//{{{_completor}}}: completion actor
 
 
 !Usage
@@ -1663,12 +1674,13 @@ With horizontal table and with categories:
 
 
 !Revision History
-!!v1.3.0 (2011-XX-XX)
+!!v1.3.0 (2011-05-29)
 Changes:
 *upon changes, modifies the tiddler last update date
 
 Enhancements:
 *added macro parameter to specify task full description heading level
+*actor is now associated to task (creation, modification, completion)
 
 !!v1.2.0 (2011-05-21)
 Enhancements:
