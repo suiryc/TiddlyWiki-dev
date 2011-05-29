@@ -857,13 +857,13 @@ handler: function(place, macroName, params, wikifier, paramString, tiddler) {
 <pre>txt_GATracker_id: UA-23188652-1
 txt_GATracker_track: 1%2C0%2C1%2C1%2C1%2C1%2C1</pre>
 </div>
-<div title="TiddlerToCPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105282151" modified="201105282247" tags="systemConfig" changecount="3">
+<div title="TiddlerToCPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105282151" modified="201105291211" tags="systemConfig" changecount="5">
 <pre>/***
 |Name|TiddlerToCPlugin|
 |Description|Tiddler Table of Contents generator|
 |Author|Julien Coloos|
-|Version|1.0.0|
-|Date|2011-05-28|
+|Version|1.0.1|
+|Date|2011-05-29|
 |Status|stable|
 |Source|http://julien.coloos.free.fr/TiddlyWiki-dev/#TiddlerToCPlugin|
 |License|[img[CC BY-SA 3.0|http://i.creativecommons.org/l/by-sa/3.0/80x15.png][http://creativecommons.org/licenses/by-sa/3.0/]]|
@@ -871,7 +871,6 @@ txt_GATracker_track: 1%2C0%2C1%2C1%2C1%2C1%2C1</pre>
 |Documentation|http://julien.coloos.free.fr/TiddlyWiki-dev/#TiddlerToCPlugin|
 
 {{tw_ttoc{}}}
-
 !Description
 This plugin adds the {{{TiddlerToC}}} macro to generate a ~ToC inside a tiddler.
 The generated ~ToC entries list the headings found in the tidder, each entry being preceded by a number representing its level and index (e.g.: //1.2.1//). Those numbers link to the corresponding heading.
@@ -945,6 +944,10 @@ Default style can be found in the code below, and can be overridden in the [[Sty
 
 
 !Revision History
+!!v1.0.1 (2011-05-29)
+Changes:
+* if there is none, adds a {{{br}}} tag after the ~ToC
+
 !!v1.0.0 (2011-05-28)
 Initial release.
 
@@ -954,7 +957,7 @@ Initial release.
 //{{{
 if (!config.macros.TiddlerToC) {(function($) {
 
-version.extensions.TiddlerToCPlugin = {major: 1, minor: 0, revision: 0, date: new Date(2011, 5, 28)};
+version.extensions.TiddlerToCPlugin = {major: 1, minor: 0, revision: 1, date: new Date(2011, 5, 29)};
 
 var hTag = /^h([1-6])$/i;
 
@@ -1070,7 +1073,11 @@ generate: function(place) {
 	});
 	toc[0].toc = {generated: true};
 
-	if (displayToc) toc.show();
+	if (displayToc) {
+		/* Note: jQuery 'next' does not take into account text nodes */
+		var sibling = toc.show()[0].nextSibling;
+		if (sibling &amp;&amp; (sibling.nodeName != &quot;BR&quot;)) toc.after(&quot;&lt;br/&gt;&quot;);
+	}
 }
 };
 
