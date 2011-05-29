@@ -1088,7 +1088,7 @@ generate: function(place) {
 ***/
 </pre>
 </div>
-<div title="ToDoListPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105062221" modified="201105291424" tags="systemConfig" changecount="6">
+<div title="ToDoListPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105062221" modified="201105291734" tags="systemConfig" changecount="7">
 <pre>/***
 |Name|ToDoListPlugin|
 |Description|ToDo list contained in a tiddler|
@@ -1108,7 +1108,7 @@ version.extensions.ToDoListPlugin={major:1,minor:3,revision:0,date:new Date(2011
 var tooltip=$(&quot;&lt;div/&gt;&quot;).css({display:&quot;none&quot;,opacity:&quot;0.85&quot;,position:&quot;absolute&quot;,&quot;background-color&quot;:&quot;#EEEEEE&quot;,border:&quot;1px solid #888888&quot;,&quot;border-radius&quot;:&quot;10px&quot;,&quot;box-shadow&quot;:&quot;6px 6px 3px #CCCCCC&quot;,padding:&quot;4px&quot;})
 ,pl=config.macros.ToDoList={
 handler:function(place,macroName,params,wikifier,paramString,tiddler){
-	var tiddlerDisp,todoCount=0,doneCount=0,namedParams=paramString.parseParams(null,null,true),title=tiddler.title,taskList=tiddler.fields[&quot;tdl_list&quot;],rootNode=createTiddlyElement(place,&quot;div&quot;),menuNode=$(&quot;&lt;div/&gt;&quot;)[0],table=0,v=0,tableNode=createTiddlyElement(rootNode,&quot;div&quot;),node=story.findContainingTiddler(place),paramTable=getParam(namedParams,&quot;table&quot;),tasks=taskList?taskList.split(&quot;,&quot;):[],paramCats=getParam(namedParams,&quot;categories&quot;),cats=paramCats&amp;&amp;(paramCats!=&quot;0&quot;)?{list:[],map:{}}:null,paramUpd=getParam(namedParams,&quot;updateTiddler&quot;),rows;
+	var tiddlerDisp,todoCount=0,doneCount=0,namedParams=paramString.parseParams(null,null,true),title=tiddler.title,taskList=tiddler.fields[&quot;tdl_list&quot;],rootNode=createTiddlyElement(place,&quot;div&quot;),menuNode=$(&quot;&lt;div/&gt;&quot;)[0],table=0,v=0,tableNode=createTiddlyElement(rootNode,&quot;div&quot;),node=story.findContainingTiddler(place),paramTable=getParam(namedParams,&quot;table&quot;),tasks=taskList?taskList.split(&quot;,&quot;):[],paramCats=getParam(namedParams,&quot;categories&quot;),cats=paramCats&amp;&amp;(paramCats!=&quot;0&quot;)?{list:[],map:{}}:null,paramUpd=getParam(namedParams,&quot;updateTiddler&quot;),paramHLvl=getParam(namedParams,&quot;headingLevel&quot;),hLvl=parseInt(paramHLvl||&quot;2&quot;),rows;
 	if(node) tiddlerDisp=store.getTiddler(node.getAttribute(&quot;tiddler&quot;));
 	if(!tiddlerDisp) tiddlerDisp=tiddler;
 	$(menuNode).html(&quot;&lt;a id='tdl_menu_access'&gt;Edit ToDo list&lt;/a&gt;&lt;div id='tdl_action_menu' style='display:none'&gt;&lt;a id='tdl_action_add'&gt;Add&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_update'&gt;Update&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_rearrange'&gt;Rearrange&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_migrate'&gt;Migrate&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_remove'&gt;Remove&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_purge'&gt;Purge&lt;/a&gt;&lt;br/&gt;&lt;/div&gt;&lt;div id='tdl_action_message' style='display:none'/&gt;&lt;div id='tdl_task_entry_form' style='display:none'&gt;&lt;table&gt;&lt;tr&gt;&lt;td&gt;Category:&lt;/td&gt;&lt;td&gt;&lt;select id='tdl_task_cat'&gt;&lt;option value='-1'&gt;Uncategorized&lt;/option&gt;&lt;option value='-2'&gt;New category&lt;/option&gt;&lt;option value=''&gt;----------&lt;/option&gt;&lt;/select&gt;&lt;span id='tdl_task_applycat'&gt;&lt;input type='checkbox'/&gt;&lt;span/&gt;&lt;/span&gt;&lt;br/&gt;&lt;input id='tdl_task_newcat' type='text' style='width:99%;display:none'/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Label:&lt;/td&gt;&lt;td style='width:100%'&gt;&lt;input id='tdl_task_lbl' type='text' style='width:99%'/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Description:&lt;/td&gt;&lt;td&gt;&lt;textarea id='tdl_task_desc' rows='15' style='width:99%'&gt;&lt;/textarea&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;a id='tdl_preview'&gt;Preview&lt;/a&gt;&lt;/div&gt;&lt;div id='tdl_action_submit_form' style='display:none'&gt;&lt;input id='tdl_action_submit' type='submit'/&gt;&lt;input id='tdl_action_cancel' type='submit' value='Cancel'/&gt;&lt;/div&gt;&quot;).find(&quot;a&quot;).attr({href:&quot;javascript:;&quot;});
@@ -1216,10 +1216,10 @@ handler:function(place,macroName,params,wikifier,paramString,tiddler){
 	$(&quot;#tdl_action_purge&quot;,menuNode).click({rootNode:rootNode,action:pl.Action.PURGE},pl.taskAction);
 	$(&quot;#tdl_preview&quot;,menuNode).mouseover(function(){
 		var data=pl.taskFormData(menuNode,cats);
-		pl.showTooltip($(pl.taskSection(rootNode,rootNode.tdl.tasks,cats?data.cat||&quot;Uncategorized&quot;:null,data.lbl,data.desc)),$(this));
+		pl.showTooltip($(pl.taskSection(rootNode,hLvl,rootNode.tdl.tasks,cats?data.cat||&quot;Uncategorized&quot;:null,data.lbl,data.desc)),$(this));
 	}).mouseout(function(){tooltip.hide().html(&quot;&quot;)});
 
-	$.each(tasks,function(i,id){$(pl.taskSection(rootNode,id,cats?tiddler.fields[&quot;tdl_&quot;+id+&quot;_category&quot;]||&quot;Uncategorized&quot;:null,tiddler.fields[&quot;tdl_&quot;+id+&quot;_label&quot;],tiddler.fields[&quot;tdl_&quot;+id+&quot;_description&quot;])).attr({id:&quot;tdl_&quot;+id+&quot;_anchor&quot;}).addClass(&quot;tdl_task&quot;).appendTo(rootNode)});
+	$.each(tasks,function(i,id){$(pl.taskSection(rootNode,hLvl,id,cats?tiddler.fields[&quot;tdl_&quot;+id+&quot;_category&quot;]||&quot;Uncategorized&quot;:null,tiddler.fields[&quot;tdl_&quot;+id+&quot;_label&quot;],tiddler.fields[&quot;tdl_&quot;+id+&quot;_description&quot;])).attr({id:&quot;tdl_&quot;+id+&quot;_anchor&quot;}).addClass(&quot;tdl_task&quot;).appendTo(rootNode)});
 	if(cats) $.each(cats.list,function(i,c){if(c!=&quot;Uncategorized&quot;) $(&quot;&lt;option/&gt;&quot;).html(pl.plain(c)).val(i).appendTo($(&quot;#tdl_task_cat&quot;,menuNode))});
 	$(&quot;#tdl_task_cat&quot;,menuNode).change(function(){
 		if($(&quot;#tdl_task_cat&quot;,menuNode).val()==&quot;&quot;) $(&quot;#tdl_task_cat option&quot;,menuNode).eq(0).attr({selected:&quot;selected&quot;});
@@ -1237,9 +1237,10 @@ showTooltip:function(node,rel){
 	}
 	tooltip.css(pos).show();
 },
-taskSection:function(rootNode,id,cat,lbl,desc){
-	var title=rootNode.tdl.title,created=pl.getDate(title,id,&quot;created&quot;)||new Date(),updated=pl.getDate(title,id,&quot;updated&quot;),completed=pl.getDate(title,id,&quot;completed&quot;),section=&quot;!!&quot;+lbl,node;
-	wikify(section,node=createTiddlyElement(null,&quot;div&quot;));
+taskSection:function(rootNode,hLvl,id,cat,lbl,desc){
+	var title=rootNode.tdl.title,created=pl.getDate(title,id,&quot;created&quot;)||new Date(),updated=pl.getDate(title,id,&quot;updated&quot;),completed=pl.getDate(title,id,&quot;completed&quot;),section=&quot;!&quot;,node;
+	while(--hLvl&gt;0) section+=&quot;!&quot;;
+	wikify(section+lbl,node=createTiddlyElement(null,&quot;div&quot;));
 	if(!desc) $(node).hide();
 	$(createTiddlyButton(createTiddlyElement(node,&quot;div&quot;,null,&quot;tdl_nopreview&quot;),&quot;Go to list&quot;)).attr({href:&quot;javascript:;&quot;}).click({id:&quot;tdl_&quot;+id+&quot;_anchor_list&quot;},function(ev){
 		pl.scrollTo($(&quot;#&quot;+ev.data.id,rootNode)[0]);
@@ -1506,7 +1507,7 @@ pl.Action={NONE:0,ADD:1,UPDATE:2,REARRANGE:3,REMOVE:4,PURGE:5,MIGRATE:6};
 })(jQuery);}
 //}}}</pre>
 </div>
-<div title="ToDoListPluginDocumentation" creator="Julien Coloos" modifier="Julien Coloos" created="201105062227" modified="201105291427" changecount="6" tdl_1_created="1304720981702" tdl_1_label="Task 1: without long description" tdl_1_description="" tdl_nextid="6" tdl_list="1,2,3,4,5" tdl_2_created="1304721002525" tdl_2_label="Task 2" tdl_2_description="With long ''description''." tdl_2_completed="1304721005323" tdl_3_created="1304721036949" tdl_3_category="[[Category 1]]" tdl_3_label="//Categorized// task" tdl_3_description="" tdl_4_created="1304721056287" tdl_4_category="[[Category 1]]" tdl_4_label="Another categorized task" tdl_4_description="" tdl_5_created="1304721078462" tdl_5_label="Yet another category" tdl_5_description="" tdl_5_updated="1304721099956" tdl_5_category="{{{Category 2}}}" tdl_4_completed="1304721106696">
+<div title="ToDoListPluginDocumentation" creator="Julien Coloos" modifier="Julien Coloos" created="201105062227" modified="201105291737" changecount="8" tdl_1_created="1304720981702" tdl_1_label="Task 1: without long description" tdl_1_description="" tdl_nextid="6" tdl_list="1,2,3,4,5" tdl_2_created="1304721002525" tdl_2_label="Task 2" tdl_2_description="With long ''description''." tdl_2_completed="1304721005323" tdl_3_created="1304721036949" tdl_3_category="[[Category 1]]" tdl_3_label="//Categorized// task" tdl_3_description="" tdl_4_created="1304721056287" tdl_4_category="[[Category 1]]" tdl_4_label="Another categorized task" tdl_4_description="" tdl_5_created="1304721078462" tdl_5_label="Yet another category" tdl_5_description="" tdl_5_updated="1304721099956" tdl_5_category="{{{Category 2}}}" tdl_4_completed="1304721106696">
 <pre>|Name|ToDoListPluginDocumentation|
 |Description|~ToDo list contained in a tiddler|
 |Author|Julien Coloos|
@@ -1587,7 +1588,7 @@ When a task is deleted (//Remove// or //Purge// action), user is also asked whet
 
 To be visible in the timeline view, tiddler last update date is modified upon changes in the tasks list. This behaviour can be disabled.
 
-Each task description is displayed in a level-2 headline, and has a link which leads to the corresponding entry in the tasks labels table.
+Each task description is displayed in a level-2 heading, and has a link which leads to the corresponding entry in the tasks labels table. Heading level can be given as macro parameter.
 
 
 !Notes
@@ -1609,53 +1610,65 @@ The {{{ToDoList}}} macro is intended to be inserted inside a tiddler.
 
 !!Parameters
 The following parameters are available:
+*{{{categories}}} (optional)
+**if not given, or set to {{{0}}}, a user-defined category cannot be associated to tasks
+**otherwise, a user-defined category can be associated to tasks
+*{{{headingLevel}}} (optional)
+**indicates the heading level (from 1 to 6) to use for task full description
+**default value is {{{2}}}
 *{{{table}}} (optional)
 **if not given, or set to {{{0}}}, the tasks labels are displayed in their creation order
 **if set to {{{v}}}, the tasks labels are displayed inside a vertical table
 **otherwise, the tasks labels are displayed inside an horizontal table
-*{{{categories}}} (optional)
-**if not given, or set to {{{0}}}, a user-defined category cannot be associated to tasks
-**otherwise, a user-defined category can be associated to tasks
 *{{{updateTiddler}}} (optional)
-**if set to {{{0}}}, tiddler last update date is not modified upon changes
+**if set to {{{0}}}, tiddler last update date is not update upon changes
 **otherwise, last update date is modified
 
 !!Examples
+Without table and without categories:
 {{{
-&lt;&lt;ToDoList&gt;&gt;
+&lt;&lt;ToDoList headingLevel:3&gt;&gt;
 }}}
-&lt;&lt;ToDoList&gt;&gt;
+&lt;&lt;ToDoList headingLevel:3&gt;&gt;
 
+Without table and with categories:
 {{{
-&lt;&lt;ToDoList categories:1&gt;&gt;
+&lt;&lt;ToDoList headingLevel:3 categories:1&gt;&gt;
 }}}
-&lt;&lt;ToDoList categories:1&gt;&gt;
+&lt;&lt;ToDoList headingLevel:3 categories:1&gt;&gt;
 
+With vertical table and without categories:
 {{{
-&lt;&lt;ToDoList table:v&gt;&gt;
+&lt;&lt;ToDoList headingLevel:3 table:v&gt;&gt;
 }}}
-&lt;&lt;ToDoList table:v&gt;&gt;
+&lt;&lt;ToDoList headingLevel:3 table:v&gt;&gt;
 
+With vertical table and with categories:
 {{{
-&lt;&lt;ToDoList table:v categories:1&gt;&gt;
+&lt;&lt;ToDoList headingLevel:3 table:v categories:1&gt;&gt;
 }}}
-&lt;&lt;ToDoList table:v categories:1&gt;&gt;
+&lt;&lt;ToDoList headingLevel:3 table:v categories:1&gt;&gt;
 
+With horizontal table and without categories:
 {{{
-&lt;&lt;ToDoList table:h&gt;&gt;
+&lt;&lt;ToDoList headingLevel:3 table:h&gt;&gt;
 }}}
-&lt;&lt;ToDoList table:h&gt;&gt;
+&lt;&lt;ToDoList headingLevel:3 table:h&gt;&gt;
 
+With horizontal table and with categories:
 {{{
-&lt;&lt;ToDoList table:h categories:1&gt;&gt;
+&lt;&lt;ToDoList headingLevel:3 table:h categories:1&gt;&gt;
 }}}
-&lt;&lt;ToDoList table:h categories:1&gt;&gt;
+&lt;&lt;ToDoList headingLevel:3 table:h categories:1&gt;&gt;
 
 
 !Revision History
 !!v1.3.0 (2011-XX-XX)
 Changes:
 *upon changes, modifies the tiddler last update date
+
+Enhancements:
+*added macro parameter to specify task full description heading level
 
 !!v1.2.0 (2011-05-21)
 Enhancements:
