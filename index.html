@@ -572,12 +572,14 @@ refreshPrompt.apply(windowNode);
 <div title="DefaultTiddlers" creator="Julien Coloos" modifier="Julien Coloos" created="201105062127" modified="201105142157" changecount="3">
 <pre>[[Devel]]</pre>
 </div>
-<div title="Devel" creator="Julien Coloos" modifier="Julien Coloos" created="201105062129" modified="201105282219" changecount="17">
+<div title="Devel" creator="Julien Coloos" modifier="Julien Coloos" created="201105062129" modified="201106172137" changecount="18">
 <pre>!Plugins
 !!~ToDo list
 Some plugins can be used to provide a ~ToDo list feature in ~TiddlyWiki, like [[CheckboxPlugin|http://www.tiddlytools.com/#CheckboxPlugin]], [[ToDoList|http://www.tiddlytools.com/#ToDoList]] and [[TaskOrganizerPlugin|http://www.math.ist.utl.pt/~psoares/addons_2.4.html#TaskOrganizerPlugin]]. There even exist alternate versions of the original ~TiddlyWiki.
 However none met my needs: either the plugin does not provide enough features, requires to create a tiddler for each task, or requires to edit the tiddler manually to add a task.
+
 And so, here is a new [[ToDo list plugin|ToDoListPlugin]], along with its [[documentation|ToDoListPluginDocumentation]]. This one provides tools to manage the tasks, does not require a tiddler for each added task, and allows ~TiddlyWiki formatting in tasks description.
+When upgrading to newer versions of this plugin, it may be necessary to update ~ToDo list created with previous versions using the dedicated [[update plugin|ToDoListPlugin]]
 
 !!Table of Contents
 There are some plugins that can be used to generate a table of contents, like:
@@ -1122,13 +1124,13 @@ generate: function(place, minEntries) {
 ***/
 </pre>
 </div>
-<div title="ToDoListPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105062221" modified="201105291840" tags="systemConfig" changecount="8">
+<div title="ToDoListPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105062221" modified="201106172147" tags="systemConfig" changecount="10">
 <pre>/***
 |Name|ToDoListPlugin|
 |Description|ToDo list contained in a tiddler|
 |Author|Julien Coloos|
-|Version|1.3.0|
-|Date|2011-05-29|
+|Version|1.4.0|
+|Date|2011-06-17|
 |Status|stable|
 |Source|http://julien.coloos.free.fr/TiddlyWiki-dev/#ToDoListPlugin|
 |License|[img[CC BY-SA 3.0|http://i.creativecommons.org/l/by-sa/3.0/80x15.png][http://creativecommons.org/licenses/by-sa/3.0/]]|
@@ -1138,11 +1140,11 @@ generate: function(place, minEntries) {
 ***/
 //{{{
 if(!config.macros.ToDoList){(function($){
-version.extensions.ToDoListPlugin={major:1,minor:3,revision:0,date:new Date(2011,5,29)};
+version.extensions.ToDoListPlugin={major:1,minor:4,revision:0,date:new Date(2011,6,17)};
 var tooltip=$(&quot;&lt;div/&gt;&quot;).css({display:&quot;none&quot;,opacity:&quot;0.85&quot;,position:&quot;absolute&quot;,&quot;background-color&quot;:&quot;#EEEEEE&quot;,border:&quot;1px solid #888888&quot;,&quot;border-radius&quot;:&quot;10px&quot;,&quot;box-shadow&quot;:&quot;6px 6px 3px #CCCCCC&quot;,padding:&quot;4px&quot;})
 ,pl=config.macros.ToDoList={
 handler:function(place,macroName,params,wikifier,paramString,tiddler){
-	var tiddlerDisp,todoCount=0,doneCount=0,namedParams=paramString.parseParams(null,null,true),title=tiddler.title,taskList=tiddler.fields[&quot;tdl_list&quot;],rootNode=createTiddlyElement(place,&quot;div&quot;),menuNode=$(&quot;&lt;div/&gt;&quot;)[0],table=0,v=0,tableNode=createTiddlyElement(rootNode,&quot;div&quot;),node=story.findContainingTiddler(place),paramTable=getParam(namedParams,&quot;table&quot;),tasks=taskList?taskList.split(&quot;,&quot;):[],paramCats=getParam(namedParams,&quot;categories&quot;),cats=paramCats&amp;&amp;(paramCats!=&quot;0&quot;)?{list:[],map:{}}:null,paramUpd=getParam(namedParams,&quot;updateTiddler&quot;),paramHLvl=getParam(namedParams,&quot;headingLevel&quot;),hLvl=parseInt(paramHLvl||&quot;2&quot;),rows;
+	var tiddlerDisp,todoCount=0,doneCount=0,namedParams=paramString.parseParams(null,null,true),title=tiddler.title,taskList=pl.getValue(title,null,&quot;list&quot;),rootNode=createTiddlyElement(place,&quot;div&quot;),menuNode=$(&quot;&lt;div/&gt;&quot;)[0],table=0,v=0,tableNode=createTiddlyElement(rootNode,&quot;div&quot;),node=story.findContainingTiddler(place),paramTable=getParam(namedParams,&quot;table&quot;),tasks=taskList?taskList.split(&quot;,&quot;):[],paramCats=getParam(namedParams,&quot;categories&quot;),cats=paramCats&amp;&amp;(paramCats!=&quot;0&quot;)?{list:[],map:{}}:null,paramUpd=getParam(namedParams,&quot;updateTiddler&quot;),paramHLvl=getParam(namedParams,&quot;headingLevel&quot;),hLvl=parseInt(paramHLvl||&quot;2&quot;),rows;
 	if(node) tiddlerDisp=store.getTiddler(node.getAttribute(&quot;tiddler&quot;));
 	if(!tiddlerDisp) tiddlerDisp=tiddler;
 	$(menuNode).html(&quot;&lt;a id='tdl_menu_access'&gt;Edit ToDo list&lt;/a&gt;&lt;div id='tdl_action_menu' style='display:none'&gt;&lt;a id='tdl_action_add'&gt;Add&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_update'&gt;Update&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_rearrange'&gt;Rearrange&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_migrate'&gt;Migrate&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_remove'&gt;Remove&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_purge'&gt;Purge&lt;/a&gt;&lt;br/&gt;&lt;/div&gt;&lt;div id='tdl_action_message' style='display:none'/&gt;&lt;div id='tdl_task_entry_form' style='display:none'&gt;&lt;table&gt;&lt;tr&gt;&lt;td&gt;Category:&lt;/td&gt;&lt;td&gt;&lt;select id='tdl_task_cat'&gt;&lt;option value='-1'&gt;Uncategorized&lt;/option&gt;&lt;option value='-2'&gt;New category&lt;/option&gt;&lt;option value=''&gt;----------&lt;/option&gt;&lt;/select&gt;&lt;span id='tdl_task_applycat'&gt;&lt;input type='checkbox'/&gt;&lt;span/&gt;&lt;/span&gt;&lt;br/&gt;&lt;input id='tdl_task_newcat' type='text' style='width:99%;display:none'/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Label:&lt;/td&gt;&lt;td style='width:100%'&gt;&lt;input id='tdl_task_lbl' type='text' style='width:99%'/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Description:&lt;/td&gt;&lt;td&gt;&lt;textarea id='tdl_task_desc' rows='15' style='width:99%'&gt;&lt;/textarea&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;a id='tdl_preview'&gt;Preview&lt;/a&gt;&lt;/div&gt;&lt;div id='tdl_action_submit_form' style='display:none'&gt;&lt;input id='tdl_action_submit' type='submit'/&gt;&lt;input id='tdl_action_cancel' type='submit' value='Cancel'/&gt;&lt;/div&gt;&quot;).find(&quot;a&quot;).attr({href:&quot;javascript:;&quot;});
@@ -1158,8 +1160,7 @@ handler:function(place,macroName,params,wikifier,paramString,tiddler){
 	}
 
 	$.each(tasks,function(i,id){
-		id=parseInt(id);
-		var cat=tiddler.fields[&quot;tdl_&quot;+id+&quot;_category&quot;]||&quot;Uncategorized&quot;,completed=pl.getDate(title,id,&quot;completed&quot;);
+		var cat=pl.getValue(title,id,&quot;category&quot;)||&quot;Uncategorized&quot;,completed=pl.getDate(title,id,&quot;completed&quot;);
 		(completed?doneCount++:todoCount++);
 
 		if(cats&amp;&amp;!cats.map[cat]){
@@ -1169,10 +1170,11 @@ handler:function(place,macroName,params,wikifier,paramString,tiddler){
 
 		$(node=createTiddlyElement(cats?cats.map[cat][table&amp;&amp;completed?1:0]:table?$(&quot;td&quot;,tableNode)[completed?1:0]:tableNode,&quot;div&quot;,&quot;tdl_&quot;+id+&quot;_anchor_list&quot;,&quot;tdl_task_entry&quot;)).html(&quot;&lt;a href='javascript:;'&gt;&lt;tt&gt;[ ]&lt;/tt&gt;&lt;/a&gt;&quot;).children(&quot;a&quot;).click(function(){return pl.actionLink(rootNode,pl.taskNode(this))}).mouseover(function(){pl.showTooltip($(&quot;#tdl_&quot;+pl.taskNode(this).tdl.id+&quot;_anchor&quot;,rootNode).clone(),$(this))}).mouseout(function(){tooltip.hide().html(&quot;&quot;)});
 		node.tdl={id:id};
-		$(createTiddlyCheckbox(node,tiddler.fields[&quot;tdl_&quot;+id+&quot;_label&quot;],completed?&quot;checked&quot;:&quot;&quot;)).click({id:id,completed:completed},function(ev){
-			pl.setDate(title,ev.data.id,&quot;completed&quot;,ev.data.completed?undefined:new Date());
-			store.setValue(title,&quot;tdl_&quot;+ev.data.id+&quot;_completor&quot;,ev.data.completed?undefined:config.options.txtUserName);
+		$(createTiddlyCheckbox(node,pl.getValue(title,id,&quot;label&quot;),completed?&quot;checked&quot;:&quot;&quot;)).click({id:id,completed:completed},function(ev){
+			store.suspendNotifications();
+			pl.setValue(title,ev.data.id,{&quot;completed&quot;:ev.data.completed?null:new Date().getTime(),&quot;completor&quot;:ev.data.completed?null:config.options.txtUserName});
 			pl.updTiddler(rootNode,title);
+			pl.resumeNotifications(title);
 			pl.refresh(title,tiddlerDisp.title);
 		});
 	});
@@ -1254,7 +1256,7 @@ handler:function(place,macroName,params,wikifier,paramString,tiddler){
 		pl.showTooltip($(pl.taskSection(rootNode,hLvl,rootNode.tdl.tasks,cats?data.cat||&quot;Uncategorized&quot;:null,data.lbl,data.desc)),$(this));
 	}).mouseout(function(){tooltip.hide().html(&quot;&quot;)});
 
-	$.each(tasks,function(i,id){$(pl.taskSection(rootNode,hLvl,id,cats?tiddler.fields[&quot;tdl_&quot;+id+&quot;_category&quot;]||&quot;Uncategorized&quot;:null,tiddler.fields[&quot;tdl_&quot;+id+&quot;_label&quot;],tiddler.fields[&quot;tdl_&quot;+id+&quot;_description&quot;])).attr({id:&quot;tdl_&quot;+id+&quot;_anchor&quot;}).addClass(&quot;tdl_task&quot;).appendTo(rootNode)});
+	$.each(tasks,function(i,id){$(pl.taskSection(rootNode,hLvl,id,cats?pl.getValue(title,id,&quot;category&quot;)||&quot;Uncategorized&quot;:null,pl.getValue(title,id,&quot;label&quot;),pl.getValue(title,id,&quot;description&quot;))).attr({id:&quot;tdl_&quot;+id+&quot;_anchor&quot;}).addClass(&quot;tdl_task&quot;).appendTo(rootNode)});
 	if(cats) $.each(cats.list,function(i,c){if(c!=&quot;Uncategorized&quot;) $(&quot;&lt;option/&gt;&quot;).html(pl.plain(c)).val(i).appendTo($(&quot;#tdl_task_cat&quot;,menuNode))});
 	$(&quot;#tdl_task_cat&quot;,menuNode).change(function(){
 		if($(&quot;#tdl_task_cat&quot;,menuNode).val()==&quot;&quot;) $(&quot;#tdl_task_cat option&quot;,menuNode).eq(0).attr({selected:&quot;selected&quot;});
@@ -1273,7 +1275,7 @@ showTooltip:function(node,rel){
 	tooltip.css(pos).show();
 },
 taskSection:function(rootNode,hLvl,id,cat,lbl,desc){
-	var title=rootNode.tdl.title,created=pl.getDate(title,id,&quot;created&quot;)||new Date(),creator=store.getValue(title,&quot;tdl_&quot;+id+&quot;_creator&quot;),updated=pl.getDate(title,id,&quot;updated&quot;),updator=store.getValue(title,&quot;tdl_&quot;+id+&quot;_updator&quot;),completed=pl.getDate(title,id,&quot;completed&quot;),completor=store.getValue(title,&quot;tdl_&quot;+id+&quot;_completor&quot;),section=&quot;!&quot;,node;
+	var title=rootNode.tdl.title,created=pl.getDate(title,id,&quot;created&quot;)||new Date(),creator=pl.getValue(title,id,&quot;creator&quot;),updated=pl.getDate(title,id,&quot;updated&quot;),updator=pl.getValue(title,id,&quot;updator&quot;),completed=pl.getDate(title,id,&quot;completed&quot;),completor=pl.getValue(title,id,&quot;completor&quot;),section=&quot;!&quot;,node;
 	while(--hLvl&gt;0) section+=&quot;!&quot;;
 	wikify(section+lbl,node=createTiddlyElement(null,&quot;div&quot;));
 	if(!desc) $(node).hide();
@@ -1303,11 +1305,11 @@ hideActionMenu:function(menuNode){
 	$(&quot;#tdl_menu_access&quot;,menuNode).show();
 },
 showTaskForm:function(rootNode,id){
-	var add=rootNode.tdl.action==pl.Action.ADD,title=rootNode.tdl.title,menuNode=rootNode.tdl.menuNode,taskList=store.getValue(title,&quot;tdl_list&quot;),cats=rootNode.tdl.cats,cat,i,lbl,desc;
+	var add=rootNode.tdl.action==pl.Action.ADD,title=rootNode.tdl.title,menuNode=rootNode.tdl.menuNode,taskList=pl.getValue(title,null,&quot;list&quot;),cats=rootNode.tdl.cats,cat,i,lbl,desc;
 	if(id){
-		cat=store.getValue(title,&quot;tdl_&quot;+id+&quot;_category&quot;);
-		lbl=store.getValue(title,&quot;tdl_&quot;+id+&quot;_label&quot;);
-		desc=store.getValue(title,&quot;tdl_&quot;+id+&quot;_description&quot;);
+		cat=pl.getValue(title,id,&quot;category&quot;);
+		lbl=pl.getValue(title,id,&quot;label&quot;);
+		desc=pl.getValue(title,id,&quot;description&quot;);
 	}
 
 	i=cats&amp;&amp;cat?$.inArray(cat,cats.list):-1;
@@ -1316,20 +1318,18 @@ showTaskForm:function(rootNode,id){
 	$(&quot;#tdl_task_lbl&quot;,menuNode).val(lbl||&quot;&quot;);
 	$(&quot;#tdl_task_desc&quot;,menuNode).val(desc||&quot;&quot;);
 	$(&quot;#tdl_action_submit&quot;,menuNode).val((add?&quot;Add&quot;:&quot;Update&quot;)+&quot; task&quot;).unbind(&quot;click&quot;).click(function(){
-		if(add) id=parseInt(store.getValue(title,&quot;tdl_nextId&quot;)||&quot;1&quot;);
+		if(add) id=parseInt(pl.getValue(title,null,&quot;nextId&quot;)||&quot;1&quot;);
 		var data=pl.taskFormData(menuNode,cats),applycat=$(&quot;#tdl_task_applycat input&quot;,menuNode)[0].checked;
 		if(!data.lbl||!id||(data.cat===undefined)) return false;
 
-		pl.setDate(title,id,add?&quot;created&quot;:&quot;updated&quot;,new Date());
-		store.setValue(title,&quot;tdl_&quot;+id+&quot;_&quot;+(add?&quot;creator&quot;:&quot;updator&quot;),config.options.txtUserName);
-		store.setValue(title,&quot;tdl_&quot;+id+&quot;_category&quot;,data.cat);
-		store.setValue(title,&quot;tdl_&quot;+id+&quot;_label&quot;,data.lbl);
-		store.setValue(title,&quot;tdl_&quot;+id+&quot;_description&quot;,data.desc);
-		if(add){
-			store.setValue(title,&quot;tdl_nextId&quot;,id+1);
-			store.setValue(title,&quot;tdl_list&quot;,(taskList?taskList+&quot;,&quot;:&quot;&quot;)+id);
-		}else if(applycat&amp;&amp;(data.cat!==cat)) $.each(taskList.split(&quot;,&quot;),function(i,id){if(store.getValue(title,&quot;tdl_&quot;+id+&quot;_category&quot;)===cat) store.setValue(title,&quot;tdl_&quot;+id+&quot;_category&quot;,data.cat)});
+		store.suspendNotifications();
+		if(add) pl.setValue(title,id,{&quot;created&quot;:new Date().getTime(),&quot;creator&quot;:config.options.txtUserName});
+		else pl.setValue(title,id,{&quot;updated&quot;:new Date().getTime(),&quot;updator&quot;:config.options.txtUserName});
+		pl.setValue(title,id,{&quot;category&quot;:data.cat,&quot;label&quot;:data.lbl,&quot;description&quot;:data.desc});
+		if(add) pl.setValue(title,null,{&quot;nextId&quot;:id+1,&quot;list&quot;:(taskList?taskList+&quot;,&quot;:&quot;&quot;)+id});
+		else if(applycat&amp;&amp;(data.cat!==cat)) $.each(taskList.split(&quot;,&quot;),function(i,id){if(pl.getValue(title,id,&quot;category&quot;)===cat) pl.setValue(title,id,{&quot;category&quot;:data.cat})});
 		pl.updTiddler(rootNode,title);
+		pl.resumeNotifications(title);
 		pl.refresh(title,rootNode.tdl.titleDisp);
 	});
 	$(&quot;#tdl_task_applycat&quot;,menuNode).hide().find(&quot;span&quot;).html(id?&quot;Apply category (&quot;+pl.plain(cat||&quot;Uncategorized&quot;)+&quot;) change to other tasks&quot;:&quot;&quot;);
@@ -1338,7 +1338,7 @@ showTaskForm:function(rootNode,id){
 	$(&quot;#tdl_action_submit_form&quot;,menuNode).show(&quot;fast&quot;);
 },
 removeTask:function(rootNode,id,orphans){
-	var title=rootNode.tdl.title,taskList=store.getValue(title,&quot;tdl_list&quot;),ntasks,asked=[],links={};
+	var title=rootNode.tdl.title,taskList=pl.getValue(title,null,&quot;list&quot;),ntasks,asked=[],links={};
 	if(!taskList) return;
 
 	if(orphans){
@@ -1363,26 +1363,18 @@ removeTask:function(rootNode,id,orphans){
 		if(v==id) return;
 		ntasks=(ntasks?ntasks+&quot;,&quot;:&quot;&quot;)+v;
 	});
-	pl.setDate(title,id,&quot;created&quot;,undefined);
-	store.setValue(title,&quot;tdl_&quot;+id+&quot;_creator&quot;,undefined);
-	pl.setDate(title,id,&quot;updated&quot;,undefined);
-	store.setValue(title,&quot;tdl_&quot;+id+&quot;_updator&quot;,undefined);
-	pl.setDate(title,id,&quot;completed&quot;,undefined);
-	store.setValue(title,&quot;tdl_&quot;+id+&quot;_completor&quot;,undefined);
-	store.setValue(title,&quot;tdl_&quot;+id+&quot;_category&quot;,undefined);
-	store.setValue(title,&quot;tdl_&quot;+id+&quot;_label&quot;,undefined);
-	store.setValue(title,&quot;tdl_&quot;+id+&quot;_description&quot;,undefined);
-	store.setValue(title,&quot;tdl_list&quot;,ntasks);
+	store.setValue(title,&quot;tdl.t&quot;+id,null);
+	pl.setValue(title,null,{&quot;list&quot;:ntasks});
 },
 taskAction:function(ev){
-	var rootNode=ev.data.rootNode,action=ev.data.action,title=rootNode.tdl.title,menuNode=rootNode.tdl.menuNode,taskList=store.getValue(title,&quot;tdl_list&quot;);
+	var rootNode=ev.data.rootNode,action=ev.data.action,title=rootNode.tdl.title,menuNode=rootNode.tdl.menuNode,taskList=pl.getValue(title,null,&quot;list&quot;),tasks=taskList?taskList.split(&quot;,&quot;):[];
 
 	if(action==pl.Action.PURGE){
 		if(!confirm(&quot;Remove all tasks?&quot;)) return false;
-		$.each(taskList?taskList.split(&quot;,&quot;):[],function(i,id){pl.removeTask(rootNode,id,1)});
-		store.setValue(title,&quot;tdl_list&quot;,undefined);
-		store.setValue(title,&quot;tdl_nextId&quot;,undefined);
+		store.suspendNotifications();
+		store.setValue(title,&quot;tdl&quot;,null);
 		pl.updTiddler(rootNode,title);
+		pl.resumeNotifications(title);
 		pl.refresh(title,rootNode.tdl.titleDisp);
 		return false;
 	}
@@ -1400,8 +1392,10 @@ taskAction:function(ev){
 		childNode.html(&quot;Please select the task to move, then the one to move to&quot;);
 		$(&quot;#tdl_action_submit&quot;,menuNode).unbind(&quot;click&quot;).val(&quot;Apply&quot;).click(function(){
 			if(!rootNode.tdl.tasks) return false;
-			store.setValue(title,&quot;tdl_list&quot;,rootNode.tdl.tasks[1].join(&quot;,&quot;));
+			store.suspendNotifications();
+			pl.setValue(title,null,{&quot;list&quot;:rootNode.tdl.tasks[1].join(&quot;,&quot;)});
 			pl.updTiddler(rootNode,title);
+			pl.resumeNotifications(title);
 			pl.refresh(title,rootNode.tdl.titleDisp);
 		});
 		$(&quot;#tdl_action_submit_form&quot;,menuNode).show(&quot;fast&quot;);
@@ -1410,39 +1404,35 @@ taskAction:function(ev){
 		childNode.html(&quot;Please select the task(s) to migrate and the destination tiddler&lt;div&gt;&lt;select id='tdl_migrate_tiddler'/&gt;&lt;/div&gt;&quot;);
 		$.each(tiddlers,function(i,t){if(t.title!=title) $(&quot;&lt;option value='&quot;+i+&quot;'/&gt;&quot;).html(t.title.htmlEncode()).appendTo($(&quot;#tdl_migrate_tiddler&quot;,childNode))});
 		$(&quot;#tdl_action_submit&quot;,menuNode).unbind(&quot;click&quot;).val(&quot;Migrate task(s)&quot;).click(function(){
-			var tasks=rootNode.tdl.tasks,ntitle=tiddlers[$(&quot;#tdl_migrate_tiddler option:selected&quot;,childNode).val()].title,ntaskList=store.getValue(ntitle,&quot;tdl_list&quot;);
-			if(!tasks||!tasks.length) return;
+			var stasks=rootNode.tdl.tasks,ntitle=tiddlers[$(&quot;#tdl_migrate_tiddler option:selected&quot;,childNode).val()].title,ntaskList=pl.getValue(ntitle,null,&quot;list&quot;);
+			if(!stasks||!stasks.length) return;
 
-			$.each(tasks.sort(),function(i,id){
-				nid=parseInt(store.getValue(ntitle,&quot;tdl_nextId&quot;)||&quot;1&quot;);
-				pl.setDate(ntitle,nid,&quot;created&quot;,pl.getDate(title,id,&quot;created&quot;));
-				store.setValue(ntitle,&quot;tdl_&quot;+nid+&quot;_creator&quot;,store.getValue(title,&quot;tdl_&quot;+id+&quot;_creator&quot;));
-				pl.setDate(ntitle,nid,&quot;updated&quot;,pl.getDate(title,id,&quot;updated&quot;));
-				store.setValue(ntitle,&quot;tdl_&quot;+nid+&quot;_updator&quot;,store.getValue(title,&quot;tdl_&quot;+id+&quot;_updator&quot;));
-				pl.setDate(ntitle,nid,&quot;completed&quot;,pl.getDate(title,id,&quot;completed&quot;));
-				store.setValue(ntitle,&quot;tdl_&quot;+nid+&quot;_completor&quot;,store.getValue(title,&quot;tdl_&quot;+id+&quot;_completor&quot;));
-				store.setValue(ntitle,&quot;tdl_&quot;+nid+&quot;_category&quot;,store.getValue(title,&quot;tdl_&quot;+id+&quot;_category&quot;));
-				store.setValue(ntitle,&quot;tdl_&quot;+nid+&quot;_label&quot;,store.getValue(title,&quot;tdl_&quot;+id+&quot;_label&quot;));
-				store.setValue(ntitle,&quot;tdl_&quot;+nid+&quot;_description&quot;,store.getValue(title,&quot;tdl_&quot;+id+&quot;_description&quot;));
-				store.setValue(ntitle,&quot;tdl_nextId&quot;,nid+1);
-				store.setValue(ntitle,&quot;tdl_list&quot;,ntaskList=(ntaskList?ntaskList+&quot;,&quot;:&quot;&quot;)+nid);
+			store.suspendNotifications();
+			$.each(stasks.sort(function(a,b){return $.inArray(a,tasks)-$.inArray(b,tasks)}),function(i,id){
+				nid=parseInt(pl.getValue(ntitle,null,&quot;nextId&quot;)||&quot;1&quot;);
+				pl.setValue(ntitle,nid,{&quot;created&quot;:pl.getValue(title,id,&quot;created&quot;),&quot;creator&quot;:pl.getValue(title,id,&quot;creator&quot;),&quot;updated&quot;:pl.getValue(title,id,&quot;updated&quot;),&quot;updator&quot;:pl.getValue(title,id,&quot;updator&quot;),&quot;completed&quot;:pl.getValue(title,id,&quot;completed&quot;),&quot;completor&quot;:pl.getValue(title,id,&quot;completor&quot;),&quot;category&quot;:pl.getValue(title,id,&quot;category&quot;),&quot;label&quot;:pl.getValue(title,id,&quot;label&quot;),&quot;description&quot;:pl.getValue(title,id,&quot;description&quot;)});
+				pl.setValue(ntitle,null,{&quot;nextId&quot;:nid+1,&quot;list&quot;:ntaskList=(ntaskList?ntaskList+&quot;,&quot;:&quot;&quot;)+nid});
 				pl.removeTask(rootNode,id,0);
 			});
 			pl.updTiddler(rootNode,title);
 			pl.updTiddler(rootNode,ntitle);
+			pl.resumeNotifications(title);
+			store.notify(ntitle,true);
 			pl.refresh(title,rootNode.tdl.titleDisp);
 		});
 		$(&quot;#tdl_action_submit_form&quot;,menuNode).show(&quot;fast&quot;);
 	}else if(action==pl.Action.REMOVE){
 		childNode.html(&quot;Please select the task(s) to remove&quot;);
 		$(&quot;#tdl_action_submit&quot;,menuNode).unbind(&quot;click&quot;).val(&quot;Remove task(s)&quot;).click(function(){
-			var tasks=rootNode.tdl.tasks,message=&quot;Removing:&quot;;
-			if(!tasks||!tasks.length) return;
+			var stasks=rootNode.tdl.tasks,message=&quot;Removing:&quot;;
+			if(!stasks||!stasks.length) return;
 
-			$.each(tasks,function(i,id){message+=&quot;\n - &quot;+pl.plain(store.getValue(title,&quot;tdl_&quot;+id+&quot;_label&quot;))});
+			$.each(stasks,function(i,id){message+=&quot;\n - &quot;+pl.plain(pl.getValue(title,id,&quot;label&quot;))});
 			if(!confirm(message)) return false;
-			$.each(tasks,function(i,id){pl.removeTask(rootNode,id,1)});
+			store.suspendNotifications();
+			$.each(stasks,function(i,id){pl.removeTask(rootNode,id,1)});
 			pl.updTiddler(rootNode,title);
+			pl.resumeNotifications(title);
 			pl.refresh(title,rootNode.tdl.titleDisp);
 		});
 		$(&quot;#tdl_action_submit_form&quot;,menuNode).show(&quot;fast&quot;);
@@ -1492,7 +1482,7 @@ actionLink:function(rootNode,taskNode){
 			}
 		}else{
 			pl.triggerEntryActionLink(taskNode,1);
-			tasks=[id,store.getValue(rootNode.tdl.title,&quot;tdl_list&quot;).split(&quot;,&quot;)];
+			tasks=[id,pl.getValue(rootNode.tdl.title,null,&quot;list&quot;).split(&quot;,&quot;)];
 		}
 	}else if(action==pl.Action.REMOVE||action==pl.Action.MIGRATE){
 		var alreadySelected=0;
@@ -1531,16 +1521,20 @@ plain:function(t){
 	return $(node).text();
 },
 getDate:function(title,id,field){
-	var dateV=store.getValue(title,&quot;tdl_&quot;+id+&quot;_&quot;+field);
+	var dateV=pl.getValue(title,id,field);
 	return dateV?new Date(parseInt(dateV)):undefined;
 },
-setDate:function(title,id,field,date){store.setValue(title,&quot;tdl_&quot;+id+&quot;_&quot;+field,date?date.getTime():undefined)},
+getValue:function(title,id,field){return store.getValue(title,&quot;tdl.&quot;+(id?&quot;t&quot;+id+&quot;.&quot;:&quot;&quot;)+field)},
+setValue:function(title,id,fields){for(var f in fields){store.setValue(title,&quot;tdl.&quot;+(id?&quot;t&quot;+id+&quot;.&quot;:&quot;&quot;)+f,fields[f])}},
 refresh:function(title,disp){if(disp!=title) story.refreshTiddler(disp,null,true)},
+resumeNotifications:function(title){
+	store.resumeNotifications();
+	store.notify(title,true);
+},
 updTiddler:function(rootNode,title){
-	if (!rootNode.tdl.updTiddler) return;
+	if(!rootNode.tdl.updTiddler) return;
 	var t=store.getTiddler(title);
 	t.assign(undefined,undefined,undefined,new Date(),t.tags);
-	store.notify(title,true);
 	store.setDirty(true);
 },
 scrollTo:function(a){if(a) window.scrollTo(0,findPosY(a))}
@@ -1549,12 +1543,12 @@ pl.Action={NONE:0,ADD:1,UPDATE:2,REARRANGE:3,REMOVE:4,PURGE:5,MIGRATE:6};
 })(jQuery);}
 //}}}</pre>
 </div>
-<div title="ToDoListPluginDocumentation" creator="Julien Coloos" modifier="Julien Coloos" created="201105062227" modified="201105291843" changecount="9" tdl_1_created="1304720981702" tdl_1_label="Task 1: without long description" tdl_1_description="" tdl_nextid="6" tdl_list="1,2,3,4,5" tdl_2_created="1304721002525" tdl_2_label="Task 2" tdl_2_description="With long ''description''." tdl_3_created="1304721036949" tdl_3_category="[[Category 1]]" tdl_3_label="//Categorized// task" tdl_3_description="" tdl_4_created="1304721056287" tdl_4_category="[[Category 1]]" tdl_4_label="Another categorized task" tdl_4_description="" tdl_5_created="1304721078462" tdl_5_label="Yet another category" tdl_5_description="" tdl_5_updated="1306694611429" tdl_5_category="{{{Category 2}}}" tdl_3_updated="1306694601863" tdl_3_updator="Julien Coloos" tdl_4_updated="1306694606184" tdl_4_updator="Julien Coloos" tdl_5_updator="Julien Coloos" tdl_1_updated="1306694616097" tdl_1_updator="Julien Coloos" tdl_2_updated="1306694620280" tdl_2_updator="Julien Coloos" tdl_4_completed="1306694623296" tdl_4_completor="Julien Coloos" tdl_2_completed="1306694625233" tdl_2_completor="Julien Coloos">
+<div title="ToDoListPluginDocumentation" creator="Julien Coloos" modifier="Julien Coloos" created="201105062227" modified="201106172134" changecount="10" tdl.t1.created="1304720981702" tdl.t1.updated="1306694616097" tdl.t1.updator="Julien Coloos" tdl.t1.label="Task 1: without long description" tdl.t1.description="" tdl.t2.created="1304721002525" tdl.t2.updated="1306694620280" tdl.t2.updator="Julien Coloos" tdl.t2.completed="1306694625233" tdl.t2.completor="Julien Coloos" tdl.t2.label="Task 2" tdl.t2.description="With long ''description''." tdl.t3.created="1304721036949" tdl.t3.updated="1306694601863" tdl.t3.updator="Julien Coloos" tdl.t3.category="[[Category 1]]" tdl.t3.label="//Categorized// task" tdl.t3.description="" tdl.t4.created="1304721056287" tdl.t4.updated="1306694606184" tdl.t4.updator="Julien Coloos" tdl.t4.completed="1306694623296" tdl.t4.completor="Julien Coloos" tdl.t4.category="[[Category 1]]" tdl.t4.label="Another categorized task" tdl.t4.description="" tdl.t5.created="1304721078462" tdl.t5.updated="1306694611429" tdl.t5.updator="Julien Coloos" tdl.t5.category="{{{Category 2}}}" tdl.t5.label="Yet another category" tdl.t5.description="" tdl.list="1,2,3,4,5" tdl.nextid="6">
 <pre>|Name|ToDoListPluginDocumentation|
 |Description|~ToDo list contained in a tiddler|
 |Author|Julien Coloos|
-|Version|1.3.0|
-|Date|2011-05-29|
+|Version|1.4.0|
+|Date|2011-06-17|
 |Status|stable|
 |Source|http://julien.coloos.free.fr/TiddlyWiki-dev/#ToDoListPlugin|
 |License|[img[CC BY-SA 3.0|http://i.creativecommons.org/l/by-sa/3.0/80x15.png][http://creativecommons.org/licenses/by-sa/3.0/]]|
@@ -1634,20 +1628,20 @@ Each task description is displayed in a level-2 heading, and has a link which le
 
 
 !Notes
-The ~ToDo list data are stored in the tiddler fields:
+The ~ToDo list data are stored in the tiddler fields (in dedicated //namespaces//):
 *global fields
-**{{{tdl_nextId}}}: the next available task id
-**{{{tdl_list}}}: the list of currently known task ids (separated by comma)
-*fields associated to a given task //id//
-**{{{tdl_}}}//{{{id}}}//{{{_category}}}: associated category
-**{{{tdl_}}}//{{{id}}}//{{{_label}}}: label
-**{{{tdl_}}}//{{{id}}}//{{{_description}}}: long description
-**{{{tdl_}}}//{{{id}}}//{{{_created}}}: creation date
-**{{{tdl_}}}//{{{id}}}//{{{_creator}}}: creation actor
-**{{{tdl_}}}//{{{id}}}//{{{_updated}}}: last update date
-**{{{tdl_}}}//{{{id}}}//{{{_updator}}}: last update actor
-**{{{tdl_}}}//{{{id}}}//{{{_completed}}}: completion date
-**{{{tdl_}}}//{{{id}}}//{{{_completor}}}: completion actor
+**{{{tdl.nextId}}}: the next available task id
+**{{{tdl.list}}}: the list of currently known task ids (separated by comma)
+*fields associated to a given task //id// (note: //namespace// nodes cannot start with a number)
+**{{{tdl.t}}}//{{{id}}}//{{{.category}}}: associated category
+**{{{tdl.t}}}//{{{id}}}//{{{.label}}}: label
+**{{{tdl.t}}}//{{{id}}}//{{{.description}}}: long description
+**{{{tdl.t}}}//{{{id}}}//{{{.created}}}: creation date
+**{{{tdl.t}}}//{{{id}}}//{{{.creator}}}: creation actor
+**{{{tdl.t}}}//{{{id}}}//{{{.updated}}}: last update date
+**{{{tdl.t}}}//{{{id}}}//{{{.updator}}}: last update actor
+**{{{tdl.t}}}//{{{id}}}//{{{.completed}}}: completion date
+**{{{tdl.t}}}//{{{id}}}//{{{.completor}}}: completion actor
 
 
 !Usage
@@ -1708,6 +1702,18 @@ With horizontal table and with categories:
 
 
 !Revision History
+!!v1.4.0 (2011-06-17)
+Changes:
+*//migrate// action now processes tasks in their listed order (which can be changed with //rearrange// action)
+*data are now stored in tiddler fields using //namespaces//
+**@@color: red;Important note:@@ ~ToDo list created with previous versions of the plugin are thus not recognised; to update those data to the newer version, please use the dedicated [[ToDoListUpdatePlugin]] update plugin
+
+Enhancements:
+*boost up upon modifications: by default ~TiddlyWiki is refreshed each time a field is changed, which can be time and cpu consuming with some systems when many fields are concerned (e.g. with //remove// action); this mechanism is now temporarily disabled and performed once after user action completion
+
+Fixes:
+*//rearrange// action was broken since v1.2.0
+
 !!v1.3.0 (2011-05-29)
 Changes:
 *upon changes, modifies the tiddler last update date
@@ -1731,6 +1737,96 @@ Enhancements:
 
 !!v1.0.0 (2011-05-06)
 Initial release.</pre>
+</div>
+<div title="ToDoListUpdatePlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201106172134" tags="systemConfig" changecount="1">
+<pre>/***
+|Name|ToDoListUpdatePlugin|
+|Description|Updates ToDo list data when upgrading ToDoListPlugin|
+|Author|Julien Coloos|
+|Version|1.4.0|
+|Date|2011-06-17|
+|Status|stable|
+|Source|http://julien.coloos.free.fr/TiddlyWiki-dev/#ToDoListUpdatePlugin|
+|License|[img[CC BY-SA 3.0|http://i.creativecommons.org/l/by-sa/3.0/80x15.png][http://creativecommons.org/licenses/by-sa/3.0/]]|
+|CoreVersion|2.6|
+|Documentation|http://julien.coloos.free.fr/TiddlyWiki-dev/#ToDoListUpdatePlugin|
+
+!Description
+This plugin can be used to update ToDo list data created by previous versions of [[ToDoListPlugin]] when upgrading to newer versions.
+Update is triggered manually; see below.
+
+!!From first versions to version 1.4.0
+Starting with version 1.4.0, data are stored in dedicated fields //namespaces//:
+* global fields are now stored in {{{tdl}}} //namespace//, and are thus named {{{tdl.}}}//{{{xxx}}}// instead of {{{tdl_}}}//{{{xxx}}}//
+* fields associated to a given task //id// are now stored in {{{tdl.t}}}//{{{id}}}// //namespace// (//namespace// nodes cannot start with a number), and are thus named {{{tdl.t}}}//{{{id.xxx}}}// instead of {{{tdl_}}}//{{{id_xxx}}}//
+
+
+!Update
+To update data, please use the following button:
+&lt;&lt;ToDoListUpdate&gt;&gt;
+
+
+!Revision History
+!!v1.4.0 (2011-06-17)
+Initial release, to upgrade to [[ToDoListPlugin]] version 1.4.0.
+
+
+!Code
+***/
+//{{{
+if (!config.macros.ToDoListUpdate) {(function($) {
+
+version.extensions.ToDoListUpdatePlugin = {major: 1, minor: 4, revision: 0, date: new Date(2011, 6, 17)};
+
+var pl = config.macros.ToDoListUpdate = {
+handler: function(place, macroName, params, wikifier, paramString, tiddler) {
+	$(createTiddlyElement(place, &quot;div&quot;)).html(&quot;&lt;input id='tdlu_action_submit' type='submit' value='Update ToDo list data'/&gt;&quot;).find(&quot;#tdlu_action_submit&quot;).click(function() {
+		var titles = [];
+
+		/* process each tiddler */
+		$.each(store.getTiddlers(&quot;title&quot;), function(i, t) {
+			var title = t.title;
+			/* check there is something to do */
+			var taskList = pl.getValue_v1_0_0(title, null, &quot;list&quot;);
+			if (!taskList) return;
+			titles.push(title);
+
+			store.suspendNotifications();
+
+			/* update all fields */
+			$.each(taskList.split(&quot;,&quot;), function(i, id) {
+				$.each([&quot;created&quot;, &quot;creator&quot;, &quot;updated&quot;, &quot;updator&quot;, &quot;completed&quot;, &quot;completor&quot;, &quot;category&quot;, &quot;label&quot;, &quot;description&quot;], function(i, field) {
+					pl.setValue_v1_4_0(title, id, field, pl.getValue_v1_0_0(title, id, field));
+					pl.setValue_v1_0_0(title, id, field, null);
+				});
+			});
+			$.each([&quot;list&quot;, &quot;nextId&quot;], function(i, field) {
+				pl.setValue_v1_4_0(title, null, field, pl.getValue_v1_0_0(title, null, field));
+				pl.setValue_v1_0_0(title, null, field, null);
+			});
+
+			store.resumeNotifications();
+			store.notify(title, true);
+		});
+
+		var message = titles.length ? &quot;Updated tiddlers:\n - &quot; + titles.join(&quot;\n - &quot;) : &quot;No tiddler was updated&quot;;
+		alert(message);
+	});
+},
+getValue_v1_0_0: function(title, id, field) {
+	return store.getValue(title, &quot;tdl_&quot; + (id ? id + &quot;_&quot; : &quot;&quot;) + field);
+},
+setValue_v1_0_0: function(title, id, field, value) {
+	store.setValue(title, &quot;tdl_&quot; + (id ? id + &quot;_&quot; : &quot;&quot;) + field, value);
+},
+setValue_v1_4_0: function(title, id, field, value) {
+	store.setValue(title, &quot;tdl.&quot; + (id ? &quot;t&quot; + id + &quot;.&quot; : &quot;&quot;) + field, value);
+}
+};
+
+})(jQuery);}
+//}}}
+</pre>
 </div>
 </div>
 <!--POST-STOREAREA-->
