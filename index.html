@@ -624,13 +624,13 @@ Following how to do it with the [[legacy tracking method|http://blog.spacelag.co
 !Notes
 How to create a [[Cheap modal prompt]].</pre>
 </div>
-<div title="GATrackerPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105142206" modified="201105182137" tags="systemConfig" changecount="4">
+<div title="GATrackerPlugin" creator="Julien Coloos" modifier="YourName" created="201105142206" modified="201311072153" tags="systemConfig" changecount="7">
 <pre>/***
 |Name|GATrackerPlugin|
 |Description|Google Analytics tracker|
 |Author|Julien Coloos|
-|Version|1.2.0|
-|Date|2011-05-18|
+|Version|1.2.1|
+|Date|2013-11-07|
 |Status|stable|
 |Source|http://julien.coloos.free.fr/TiddlyWiki-dev/#GATrackerPlugin|
 |License|[img[CC BY-SA 3.0|http://i.creativecommons.org/l/by-sa/3.0/80x15.png][http://creativecommons.org/licenses/by-sa/3.0/]]|
@@ -675,6 +675,10 @@ Tracking can be globally disabled, or enabled per action on each tiddler:
 
 
 !Revision History
+!!v1.2.1 (2013-11-07)
+Enhancements:
+* add configurable regular expression to disable tracking according to hosting URL
+
 !!v1.2.0 (2011-05-18)
 Enhancements:
 * do not trigger {{{CloseAll}}} and {{{Open}}} actions when search is performed
@@ -697,7 +701,7 @@ var _gaq = _gaq || [];
 
 if (!config.extensions.GATracker) {(function($) {
 
-version.extensions.GATrackerPlugin = {major: 1, minor: 2, revision: 0, date: new Date(2011, 5, 18)};
+version.extensions.GATrackerPlugin = {major: 1, minor: 2, revision: 1, date: new Date(2013, 11, 07)};
 
 /* Prepare overridden TiddlyWiki displaying */
 var trackOptions = {};
@@ -716,6 +720,7 @@ loadOptions: function() {
 	trackOptions = {
 		id: pl.getOption(&quot;txt_GATracker_id&quot;),
 		enabled: parseInt(gaTrack[0] || &quot;1&quot;),
+		url_exclude: pl.getOption(&quot;txt_GATracker_url_exclude&quot;) || &quot;&quot;,
 		type: parseInt(gaTrack[1] || &quot;0&quot;),
 		events: {
 			open: parseInt(gaTrack[2] || &quot;1&quot;),
@@ -736,6 +741,7 @@ saveOptions: function() {
 		opts += &quot;,&quot; + (trackOptions.events[ev] &amp;&amp; &quot;1&quot; || &quot;0&quot;);
 	}
 	pl.setOption(&quot;txt_GATracker_id&quot;, trackOptions.id || &quot;&quot;);
+	pl.setOption(&quot;txt_GATracker_url_exclude&quot;, trackOptions.url_exclude || &quot;&quot;);
 	pl.setOption(&quot;txt_GATracker_track&quot;, opts);
 },
 track: function() {
@@ -788,7 +794,8 @@ pl.loadOptions();
 
 /* Only track in non-local mode */
 var local = &quot;file:&quot; == document.location.protocol;
-if (!local &amp;&amp; trackOptions.id &amp;&amp; trackOptions.enabled) {
+var url_excluded = trackOptions.url_exclude.length ? (new RegExp(trackOptions.url_exclude, &quot;i&quot;)).test(document.location.href) : 0;
+if (!local &amp;&amp; trackOptions.id &amp;&amp; trackOptions.enabled &amp;&amp; !url_excluded) {
 	/* Insert script tag to load GA */
 	$(&quot;head&quot;).eq(0).prepend($(&quot;&lt;script/&gt;&quot;).attr({type: &quot;text/javascript&quot;, async: &quot;true&quot;, src: (&quot;https:&quot; == document.location.protocol ? &quot;https://ssl&quot; : &quot;http://www&quot;) + &quot;.google-analytics.com/ga.js&quot;}));
 
@@ -812,22 +819,25 @@ if (!local &amp;&amp; trackOptions.id &amp;&amp; trackOptions.enabled) {
 
 config.macros.GATrackerConfig = {
 handler: function(place, macroName, params, wikifier, paramString, tiddler) {
-	$(createTiddlyElement(place, &quot;div&quot;)).html(&quot;Tracking status: &lt;span style='color:&quot; + (trackOptions.id &amp;&amp; trackOptions.enabled ? &quot;green'&gt;enabled&quot; : &quot;red'&gt;disabled&quot;) + &quot;&lt;/span&gt; and &lt;span style='color:&quot; + (local ? &quot;red'&gt;&quot; : &quot;green'&gt;non-&quot;) + &quot;local&lt;/span&gt;&quot;);
+	$(createTiddlyElement(place, &quot;div&quot;)).html(&quot;Tracking status: &lt;span style='color:&quot; + (trackOptions.id &amp;&amp; trackOptions.enabled ? &quot;green'&gt;enabled&quot; : &quot;red'&gt;disabled&quot;) + &quot;&lt;/span&gt; and &lt;span style='color:&quot; + (local ? &quot;red'&gt;&quot; : &quot;green'&gt;non-&quot;) + &quot;local&lt;/span&gt;&quot; + (!local &amp;&amp; url_excluded ? &quot;, but &lt;span style='color:red'&gt;excluded&lt;/span&gt;&quot; : &quot;&quot;));
 	if (readOnly) {
 		$(createTiddlyElement(place, &quot;div&quot;)).html(&quot;Configuration is not available in read-only mode&quot;);
 		return;
 	}
-	var formNode = $(createTiddlyElement(place, &quot;div&quot;)).html(&quot;&lt;div&gt;Google Analytics plugin configuration:&lt;/div&gt;&lt;table&gt;&lt;tr&gt;&lt;td&gt;Account ID:&lt;/td&gt;&lt;td&gt;&lt;input id='ga_id' type='text'/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Tracking:&lt;/td&gt;&lt;td&gt;&lt;input id='ga_enabled' type='checkbox'/&gt;Enabled&lt;br/&gt;&lt;br/&gt;How: &lt;select id='ga_track'&gt;&lt;option value='0'&gt;Events&lt;/option&gt;&lt;option value='1'&gt;Pages&lt;/option&gt;&lt;/select&gt;&lt;br/&gt;&lt;br/&gt;What:&lt;br/&gt;&lt;input id='ga_track_open' type='checkbox'/&gt;Open&lt;br/&gt;&lt;input id='ga_track_refresh' type='checkbox'/&gt;Refresh&lt;br/&gt;&lt;input id='ga_track_edit' type='checkbox'/&gt;Edit&lt;br/&gt;&lt;input id='ga_track_close' type='checkbox'/&gt;Close&lt;br/&gt;&lt;input id='ga_track_search' type='checkbox'/&gt;Search&lt;br/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;input id='ga_action_submit' type='submit' value='Apply'/&gt;&quot;);
+	var formNode = $(createTiddlyElement(place, &quot;div&quot;)).html(&quot;&lt;div&gt;Google Analytics plugin configuration:&lt;/div&gt;&lt;table&gt;&lt;tr&gt;&lt;td&gt;Account ID:&lt;/td&gt;&lt;td&gt;&lt;input id='ga_id' type='text'/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Tracking:&lt;/td&gt;&lt;td&gt;&lt;input id='ga_enabled' type='checkbox'/&gt;Enabled&lt;br/&gt;&lt;br/&gt;How: &lt;select id='ga_track'&gt;&lt;option value='0'&gt;Events&lt;/option&gt;&lt;option value='1'&gt;Pages&lt;/option&gt;&lt;/select&gt;&lt;br/&gt;&lt;br/&gt;What:&lt;br/&gt;&lt;input id='ga_track_open' type='checkbox'/&gt;Open&lt;br/&gt;&lt;input id='ga_track_refresh' type='checkbox'/&gt;Refresh&lt;br/&gt;&lt;input id='ga_track_edit' type='checkbox'/&gt;Edit&lt;br/&gt;&lt;input id='ga_track_close' type='checkbox'/&gt;Close&lt;br/&gt;&lt;input id='ga_track_search' type='checkbox'/&gt;Search&lt;br/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;URL exclusion:&lt;/td&gt;&lt;td&gt;&lt;input id='ga_url_exclude' type='text'/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;input id='ga_action_submit' type='submit' value='Apply'/&gt;&quot;);
 	$(&quot;#ga_id&quot;, formNode).val(trackOptions.id);
 	$(&quot;#ga_enabled&quot;, formNode)[0].checked = trackOptions.enabled;
 	$(&quot;#ga_track option&quot;, formNode).eq(trackOptions.type)[0].selected = true;
 	for (var ev in trackOptions.events) {
 		$(&quot;#ga_track_&quot; + ev, formNode)[0].checked = trackOptions.events[ev];
 	}
+	$(&quot;#ga_url_exclude&quot;, formNode).val(trackOptions.url_exclude);
 	$(&quot;#ga_action_submit&quot;, formNode).click(function() {
 		trackOptions.id = $(&quot;#ga_id&quot;, formNode).val();
 		if (!trackOptions.id.length) trackOptions.id = null;
 		trackOptions.enabled = $(&quot;#ga_enabled&quot;, formNode)[0].checked;
+		trackOptions.url_exclude = $(&quot;#ga_url_exclude&quot;, formNode).val();
+		if (!trackOptions.url_exclude.length) trackOptions.url_exclude = null;
 		trackOptions.type = parseInt($(&quot;#ga_track&quot;, formNode).val());
 		for (var ev in trackOptions.events) {
 			trackOptions.events[ev] = $(&quot;#ga_track_&quot; + ev, formNode)[0].checked;
@@ -855,9 +865,10 @@ handler: function(place, macroName, params, wikifier, paramString, tiddler) {
 <div title="SiteTitle" creator="Julien Coloos" modifier="Julien Coloos" created="201105062123" changecount="1">
 <pre>Cyrius' ~TiddlyWiki dev</pre>
 </div>
-<div title="SystemSettings" modifier="System" created="201105142207" tags="excludeLists" changecount="3">
+<div title="SystemSettings" modifier="System" created="201105142207" tags="excludeLists" changecount="5">
 <pre>txt_GATracker_id: UA-23188652-1
-txt_GATracker_track: 1%2C0%2C1%2C1%2C1%2C1%2C1</pre>
+txt_GATracker_track: 1%2C0%2C1%2C1%2C1%2C1%2C1
+txt_GATracker_url_exclude: https%3F%3A//%5B%5E/%5D*%28github%7Cdropbox%29</pre>
 </div>
 <div title="TiddlerToCPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105282151" modified="201106121312" tags="systemConfig" changecount="6">
 <pre>/***
