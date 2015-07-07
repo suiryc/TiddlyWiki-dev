@@ -1135,13 +1135,13 @@ generate: function(place, minEntries) {
 ***/
 </pre>
 </div>
-<div title="ToDoListPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105062221" modified="201106172147" tags="systemConfig" changecount="10">
+<div title="ToDoListPlugin" creator="Julien Coloos" modifier="Julien Coloos" created="201105062221" modified="201507071836" tags="systemConfig" changecount="12">
 <pre>/***
 |Name|ToDoListPlugin|
 |Description|ToDo list contained in a tiddler|
 |Author|Julien Coloos|
-|Version|1.4.0|
-|Date|2011-06-17|
+|Version|1.4.1|
+|Date|2015-07-07|
 |Status|stable|
 |Source|http://julien.coloos.free.fr/TiddlyWiki-dev/#ToDoListPlugin|
 |License|[img[CC BY-SA 3.0|http://i.creativecommons.org/l/by-sa/3.0/80x15.png][http://creativecommons.org/licenses/by-sa/3.0/]]|
@@ -1155,10 +1155,10 @@ version.extensions.ToDoListPlugin={major:1,minor:4,revision:0,date:new Date(2011
 var tooltip=$(&quot;&lt;div/&gt;&quot;).css({display:&quot;none&quot;,opacity:&quot;0.85&quot;,position:&quot;absolute&quot;,&quot;background-color&quot;:&quot;#EEEEEE&quot;,border:&quot;1px solid #888888&quot;,&quot;border-radius&quot;:&quot;10px&quot;,&quot;box-shadow&quot;:&quot;6px 6px 3px #CCCCCC&quot;,padding:&quot;4px&quot;})
 ,pl=config.macros.ToDoList={
 handler:function(place,macroName,params,wikifier,paramString,tiddler){
-	var tiddlerDisp,todoCount=0,doneCount=0,namedParams=paramString.parseParams(null,null,true),title=tiddler.title,taskList=pl.getValue(title,null,&quot;list&quot;),rootNode=createTiddlyElement(place,&quot;div&quot;),menuNode=$(&quot;&lt;div/&gt;&quot;)[0],table=0,v=0,tableNode=createTiddlyElement(rootNode,&quot;div&quot;),node=story.findContainingTiddler(place),paramTable=getParam(namedParams,&quot;table&quot;),tasks=taskList?taskList.split(&quot;,&quot;):[],paramCats=getParam(namedParams,&quot;categories&quot;),cats=paramCats&amp;&amp;(paramCats!=&quot;0&quot;)?{list:[],map:{}}:null,paramUpd=getParam(namedParams,&quot;updateTiddler&quot;),paramHLvl=getParam(namedParams,&quot;headingLevel&quot;),hLvl=parseInt(paramHLvl||&quot;2&quot;),rows;
+	var tiddlerDisp,todoCount=0,doneCount=0,namedParams=paramString.parseParams(null,null,true),title=tiddler.title,taskList=pl.getValue(title,null,&quot;list&quot;),rootNode=createTiddlyElement(place,&quot;div&quot;),menuNode=$(&quot;&lt;div/&gt;&quot;)[0],table=0,v=0,tableNode=createTiddlyElement(rootNode,&quot;div&quot;),node=story.findContainingTiddler(place),paramTable=getParam(namedParams,&quot;table&quot;),tasks=taskList?taskList.split(&quot;,&quot;):[],paramCats=getParam(namedParams,&quot;categories&quot;),cats=paramCats&amp;&amp;(paramCats!=&quot;0&quot;)?{list:[],map:{}}:null,paramUpd=getParam(namedParams,&quot;updateTiddler&quot;),paramHLvl=getParam(namedParams,&quot;headingLevel&quot;),hLvl=parseInt(paramHLvl||&quot;2&quot;),paramAddFirst=getParam(namedParams,&quot;addFirst&quot;),rows;
 	if(node) tiddlerDisp=store.getTiddler(node.getAttribute(&quot;tiddler&quot;));
 	if(!tiddlerDisp) tiddlerDisp=tiddler;
-	$(menuNode).html(&quot;&lt;a id='tdl_menu_access'&gt;Edit ToDo list&lt;/a&gt;&lt;div id='tdl_action_menu' style='display:none'&gt;&lt;a id='tdl_action_add'&gt;Add&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_update'&gt;Update&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_rearrange'&gt;Rearrange&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_migrate'&gt;Migrate&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_remove'&gt;Remove&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_purge'&gt;Purge&lt;/a&gt;&lt;br/&gt;&lt;/div&gt;&lt;div id='tdl_action_message' style='display:none'/&gt;&lt;div id='tdl_task_entry_form' style='display:none'&gt;&lt;table&gt;&lt;tr&gt;&lt;td&gt;Category:&lt;/td&gt;&lt;td&gt;&lt;select id='tdl_task_cat'&gt;&lt;option value='-1'&gt;Uncategorized&lt;/option&gt;&lt;option value='-2'&gt;New category&lt;/option&gt;&lt;option value=''&gt;----------&lt;/option&gt;&lt;/select&gt;&lt;span id='tdl_task_applycat'&gt;&lt;input type='checkbox'/&gt;&lt;span/&gt;&lt;/span&gt;&lt;br/&gt;&lt;input id='tdl_task_newcat' type='text' style='width:99%;display:none'/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Label:&lt;/td&gt;&lt;td style='width:100%'&gt;&lt;input id='tdl_task_lbl' type='text' style='width:99%'/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Description:&lt;/td&gt;&lt;td&gt;&lt;textarea id='tdl_task_desc' rows='15' style='width:99%'&gt;&lt;/textarea&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;a id='tdl_preview'&gt;Preview&lt;/a&gt;&lt;/div&gt;&lt;div id='tdl_action_submit_form' style='display:none'&gt;&lt;input id='tdl_action_submit' type='submit'/&gt;&lt;input id='tdl_action_cancel' type='submit' value='Cancel'/&gt;&lt;/div&gt;&quot;).find(&quot;a&quot;).attr({href:&quot;javascript:;&quot;});
+	$(menuNode).html(&quot;&lt;a id='tdl_menu_access'&gt;Edit ToDo list&lt;/a&gt;&lt;div id='tdl_action_menu' style='display:none'&gt;&lt;a id='tdl_action_add'&gt;Add&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_update'&gt;Update&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_rearrange'&gt;Rearrange&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_migrate'&gt;Migrate&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_remove'&gt;Remove&lt;/a&gt;&lt;br/&gt;&lt;a id='tdl_action_purge'&gt;Purge&lt;/a&gt;&lt;br/&gt;&lt;/div&gt;&lt;div id='tdl_action_message' style='display:none'/&gt;&lt;div id='tdl_task_entry_form' style='display:none'&gt;&lt;table&gt;&lt;tr&gt;&lt;td&gt;Category:&lt;/td&gt;&lt;td&gt;&lt;select id='tdl_task_cat'&gt;&lt;option value='-1'&gt;Uncategorized&lt;/option&gt;&lt;option value='-2'&gt;New category&lt;/option&gt;&lt;option value=''&gt;----------&lt;/option&gt;&lt;/select&gt;&lt;span id='tdl_task_applycat'&gt;&lt;input type='checkbox'/&gt;&lt;span/&gt;&lt;/span&gt;&lt;br/&gt;&lt;input id='tdl_task_newcat' type='text' style='width:99%;display:none'/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Label:&lt;/td&gt;&lt;td style='width:100%'&gt;&lt;input id='tdl_task_lbl' type='text' style='width:99%'/&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Description:&lt;/td&gt;&lt;td&gt;&lt;textarea id='tdl_task_desc' rows='15' style='width:99%'&gt;&lt;/textarea&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan='2'&gt;&lt;input id='tdl_task_first' type='checkbox'&gt;Insert in first position (at top of list)&lt;/input&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;a id='tdl_preview'&gt;Preview&lt;/a&gt;&lt;/div&gt;&lt;div id='tdl_action_submit_form' style='display:none'&gt;&lt;input id='tdl_action_submit' type='submit'/&gt;&lt;input id='tdl_action_cancel' type='submit' value='Cancel'/&gt;&lt;/div&gt;&quot;).find(&quot;a&quot;).attr({href:&quot;javascript:;&quot;});
 	$(&quot;body&quot;).append(tooltip);
 	if(!cats) $(&quot;#tdl_task_entry_form table tr&quot;,menuNode).eq(0).hide();
 
@@ -1236,7 +1236,7 @@ handler:function(place,macroName,params,wikifier,paramString,tiddler){
 	});
 
 	rootNode.appendChild(menuNode);
-	rootNode.tdl={title:title,titleDisp:tiddlerDisp?tiddlerDisp.title:undefined,menuNode:menuNode,tableNode:tableNode,action:pl.Action.NONE,cats:cats,updTiddler:!paramUpd||paramUpd!=&quot;0&quot;};
+	rootNode.tdl={title:title,titleDisp:tiddlerDisp?tiddlerDisp.title:undefined,menuNode:menuNode,tableNode:tableNode,action:pl.Action.NONE,cats:cats,updTiddler:!paramUpd||paramUpd!=&quot;0&quot;,addFirst:paramAddFirst&amp;&amp;paramAddFirst!=&quot;0&quot;};
 
 	$(&quot;#tdl_menu_access&quot;,menuNode).mouseenter(function(){
 		$(&quot;#tdl_menu_access&quot;,menuNode).hide();
@@ -1316,7 +1316,7 @@ hideActionMenu:function(menuNode){
 	$(&quot;#tdl_menu_access&quot;,menuNode).show();
 },
 showTaskForm:function(rootNode,id){
-	var add=rootNode.tdl.action==pl.Action.ADD,title=rootNode.tdl.title,menuNode=rootNode.tdl.menuNode,taskList=pl.getValue(title,null,&quot;list&quot;),cats=rootNode.tdl.cats,cat,i,lbl,desc;
+	var add=rootNode.tdl.action==pl.Action.ADD,title=rootNode.tdl.title,menuNode=rootNode.tdl.menuNode,taskList=pl.getValue(title,null,&quot;list&quot;),cats=rootNode.tdl.cats,cat,i,lbl,desc,node;
 	if(id){
 		cat=pl.getValue(title,id,&quot;category&quot;);
 		lbl=pl.getValue(title,id,&quot;label&quot;);
@@ -1328,16 +1328,20 @@ showTaskForm:function(rootNode,id){
 	$(&quot;#tdl_task_newcat&quot;,menuNode).val(&quot;&quot;);
 	$(&quot;#tdl_task_lbl&quot;,menuNode).val(lbl||&quot;&quot;);
 	$(&quot;#tdl_task_desc&quot;,menuNode).val(desc||&quot;&quot;);
+	node=$(&quot;#tdl_task_first&quot;,menuNode).closest(&quot;tr&quot;);
+	node.find(&quot;input&quot;)[0].checked=rootNode.tdl.addFirst;
+	if(add) node.show();
+	else node.hide();
 	$(&quot;#tdl_action_submit&quot;,menuNode).val((add?&quot;Add&quot;:&quot;Update&quot;)+&quot; task&quot;).unbind(&quot;click&quot;).click(function(){
 		if(add) id=parseInt(pl.getValue(title,null,&quot;nextId&quot;)||&quot;1&quot;);
-		var data=pl.taskFormData(menuNode,cats),applycat=$(&quot;#tdl_task_applycat input&quot;,menuNode)[0].checked;
+		var data=pl.taskFormData(menuNode,cats),applycat=$(&quot;#tdl_task_applycat input&quot;,menuNode)[0].checked,first=$(&quot;#tdl_task_first&quot;,menuNode)[0].checked;
 		if(!data.lbl||!id||(data.cat===undefined)) return false;
 
 		store.suspendNotifications();
 		if(add) pl.setValue(title,id,{&quot;created&quot;:new Date().getTime(),&quot;creator&quot;:config.options.txtUserName});
 		else pl.setValue(title,id,{&quot;updated&quot;:new Date().getTime(),&quot;updator&quot;:config.options.txtUserName});
 		pl.setValue(title,id,{&quot;category&quot;:data.cat,&quot;label&quot;:data.lbl,&quot;description&quot;:data.desc});
-		if(add) pl.setValue(title,null,{&quot;nextId&quot;:id+1,&quot;list&quot;:(taskList?taskList+&quot;,&quot;:&quot;&quot;)+id});
+		if(add) pl.setValue(title,null,{&quot;nextId&quot;:id+1,&quot;list&quot;:(taskList&amp;&amp;!first?taskList+&quot;,&quot;:&quot;&quot;)+id+(taskList&amp;&amp;first?&quot;,&quot;+taskList:&quot;&quot;)});
 		else if(applycat&amp;&amp;(data.cat!==cat)) $.each(taskList.split(&quot;,&quot;),function(i,id){if(pl.getValue(title,id,&quot;category&quot;)===cat) pl.setValue(title,id,{&quot;category&quot;:data.cat})});
 		pl.updTiddler(rootNode,title);
 		pl.resumeNotifications(title);
@@ -1554,12 +1558,12 @@ pl.Action={NONE:0,ADD:1,UPDATE:2,REARRANGE:3,REMOVE:4,PURGE:5,MIGRATE:6};
 })(jQuery);}
 //}}}</pre>
 </div>
-<div title="ToDoListPluginDocumentation" creator="Julien Coloos" modifier="Julien Coloos" created="201105062227" modified="201106172134" changecount="10" tdl.t1.created="1304720981702" tdl.t1.updated="1306694616097" tdl.t1.updator="Julien Coloos" tdl.t1.label="Task 1: without long description" tdl.t1.description="" tdl.t2.created="1304721002525" tdl.t2.updated="1306694620280" tdl.t2.updator="Julien Coloos" tdl.t2.completed="1306694625233" tdl.t2.completor="Julien Coloos" tdl.t2.label="Task 2" tdl.t2.description="With long ''description''." tdl.t3.created="1304721036949" tdl.t3.updated="1306694601863" tdl.t3.updator="Julien Coloos" tdl.t3.category="[[Category 1]]" tdl.t3.label="//Categorized// task" tdl.t3.description="" tdl.t4.created="1304721056287" tdl.t4.updated="1306694606184" tdl.t4.updator="Julien Coloos" tdl.t4.completed="1306694623296" tdl.t4.completor="Julien Coloos" tdl.t4.category="[[Category 1]]" tdl.t4.label="Another categorized task" tdl.t4.description="" tdl.t5.created="1304721078462" tdl.t5.updated="1306694611429" tdl.t5.updator="Julien Coloos" tdl.t5.category="{{{Category 2}}}" tdl.t5.label="Yet another category" tdl.t5.description="" tdl.list="1,2,3,4,5" tdl.nextid="6">
+<div title="ToDoListPluginDocumentation" creator="Julien Coloos" modifier="Julien Coloos" created="201105062227" modified="201507071835" changecount="12" tdl.t1.created="1304720981702" tdl.t1.updated="1306694616097" tdl.t1.updator="Julien Coloos" tdl.t1.label="Task 1: without long description" tdl.t1.description="" tdl.t2.created="1304721002525" tdl.t2.updated="1306694620280" tdl.t2.updator="Julien Coloos" tdl.t2.completed="1306694625233" tdl.t2.completor="Julien Coloos" tdl.t2.label="Task 2" tdl.t2.description="With long ''description''." tdl.t3.created="1304721036949" tdl.t3.updated="1306694601863" tdl.t3.updator="Julien Coloos" tdl.t3.category="[[Category 1]]" tdl.t3.label="//Categorized// task" tdl.t3.description="" tdl.t4.created="1304721056287" tdl.t4.updated="1306694606184" tdl.t4.updator="Julien Coloos" tdl.t4.completed="1306694623296" tdl.t4.completor="Julien Coloos" tdl.t4.category="[[Category 1]]" tdl.t4.label="Another categorized task" tdl.t4.description="" tdl.t5.created="1304721078462" tdl.t5.updated="1306694611429" tdl.t5.updator="Julien Coloos" tdl.t5.category="{{{Category 2}}}" tdl.t5.label="Yet another category" tdl.t5.description="" tdl.list="1,2,3,4,5" tdl.nextid="6">
 <pre>|Name|ToDoListPluginDocumentation|
 |Description|~ToDo list contained in a tiddler|
 |Author|Julien Coloos|
-|Version|1.4.0|
-|Date|2011-06-17|
+|Version|1.4.1|
+|Date|2015-07-07|
 |Status|stable|
 |Source|http://julien.coloos.free.fr/TiddlyWiki-dev/#ToDoListPlugin|
 |License|[img[CC BY-SA 3.0|http://i.creativecommons.org/l/by-sa/3.0/80x15.png][http://creativecommons.org/licenses/by-sa/3.0/]]|
@@ -1673,6 +1677,9 @@ The following parameters are available:
 *{{{updateTiddler}}} (optional)
 **if set to {{{0}}}, tiddler last update date is not update upon changes
 **otherwise, last update date is modified
+*{{{addFirst}}} (optional)
+**if not given, or set to {{{0}}}, task is added in last position (bottom of list)
+**otherwise, task is added in first position (top of list)
 
 !!Examples
 Without table and without categories:
@@ -1713,6 +1720,13 @@ With horizontal table and with categories:
 
 
 !Revision History
+!!v1.4.1 (2015-07-07)
+Changes:
+*//add// action now allows to insert task in first position (top of list)
+
+Enhancements:
+*added macro parameter {{{addFirst}}} to add tasks in first position by default
+
 !!v1.4.0 (2011-06-17)
 Changes:
 *//migrate// action now processes tasks in their listed order (which can be changed with //rearrange// action)
